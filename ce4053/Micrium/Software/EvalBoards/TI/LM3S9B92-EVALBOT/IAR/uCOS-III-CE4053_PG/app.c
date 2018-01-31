@@ -66,11 +66,20 @@
 static  OS_TCB       AppTaskStartTCB;
 static  CPU_STK      AppTaskStartStk[APP_TASK_START_STK_SIZE];
 
-static  OS_TCB       AppTaskOneTCB;
-static  CPU_STK      AppTaskOneStk[APP_TASK_ONE_STK_SIZE];
+static  OS_TCB       LEDBlinkTCB;
+static  CPU_STK      LEDBlinkStk[LED_BLINK_STK_SIZE];
 
-static  OS_TCB       AppTaskTwoTCB;
-static  CPU_STK      AppTaskTwoStk[APP_TASK_TWO_STK_SIZE];
+static  OS_TCB       moveForwardTCB;
+static  CPU_STK      moveForwardStk[MOV_FORWARD_STK_SIZE];
+
+static  OS_TCB       moveBackwardTCB;
+static  CPU_STK      moveBackwardStk[MOV_BACKWARD_STK_SIZE];
+
+static  OS_TCB       leftTurnTCB;
+static  CPU_STK      leftTurnStk[LEFT_TURN_STK_SIZE];
+
+static  OS_TCB       rightTurnTCB;
+static  CPU_STK      rightTurnStk[RIGHT_TURN_STK_SIZE];
 
 CPU_INT32U      iCnt = 0;
 CPU_INT08U      Left_tgt;
@@ -92,8 +101,12 @@ static  void        AppRobotMotorDriveSensorEnable    ();
         void        RoboTurn                          (tSide dir, CPU_INT16U seg, CPU_INT16U speed);
 
 static  void        AppTaskStart                 (void  *p_arg);
-static  void        moveForward                   (void  *p_arg);
 static  void        LEDBlink                   (void  *p_arg);
+static  void        moveForward                   (void  *p_arg);
+static  void        moveBackward                   (void  *p_arg);
+static  void        leftTurn                   (void  *p_arg);
+static  void        rightTurn                   (void  *p_arg);
+
 
 
 /*
@@ -168,13 +181,75 @@ static  void  AppTaskStart (void  *p_arg)
     
     /* Initialise the 2 Main Tasks to  Deleted State */
 
-    OSTaskCreate((OS_TCB     *)&AppTaskOneTCB, (CPU_CHAR   *)"App Task One", (OS_TASK_PTR ) moveForward, (void       *) 0, (OS_PRIO     ) APP_TASK_ONE_PRIO, (CPU_STK    *)&AppTaskOneStk[0], (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE / 10u, (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE, (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, (void       *)(CPU_INT32U) 1, (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (OS_ERR     *)&err);
-    OSTaskCreate((OS_TCB     *)&AppTaskTwoTCB, (CPU_CHAR   *)"App Task Two", (OS_TASK_PTR ) LEDBlink, (void       *) 0, (OS_PRIO     ) APP_TASK_TWO_PRIO, (CPU_STK    *)&AppTaskTwoStk[0], (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, (void       *) (CPU_INT32U) 2, (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (OS_ERR     *)&err);
-    OSTaskCreate((OS_TCB     *)&AppTaskTwoTCB, (CPU_CHAR   *)"App Task Three", (OS_TASK_PTR ) AppTaskThree, (void       *) 0, (OS_PRIO     ) APP_TASK_TWO_PRIO, (CPU_STK    *)&AppTaskTwoStk[0], (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, (void       *) (CPU_INT32U) 2, (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (OS_ERR     *)&err);
-    OSTaskCreate((OS_TCB     *)&AppTaskTwoTCB, (CPU_CHAR   *)"App Task Four", (OS_TASK_PTR ) AppTaskFour, (void       *) 0, (OS_PRIO     ) APP_TASK_TWO_PRIO, (CPU_STK    *)&AppTaskTwoStk[0], (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, (void       *) (CPU_INT32U) 2, (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (OS_ERR     *)&err);
-    OSTaskCreate((OS_TCB     *)&AppTaskTwoTCB, (CPU_CHAR   *)"App Task Five", (OS_TASK_PTR ) AppTaskFive, (void       *) 0, (OS_PRIO     ) APP_TASK_TWO_PRIO, (CPU_STK    *)&AppTaskTwoStk[0], (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, (void       *) (CPU_INT32U) 2, (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), (OS_ERR     *)&err);
-
+    OSTaskCreate((OS_TCB     *)&LEDBlinkTCB, 
+                 (CPU_CHAR   *)"LED Blink", 
+                 (OS_TASK_PTR ) LEDBlink, 
+                 (void       *) 0, 
+                 (OS_PRIO     ) LED_BLINK_PRIO, 
+                 (CPU_STK    *)&LEDBlinkStk[0], 
+                 (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
+                 (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
+                 (OS_MSG_QTY  ) 0u, 
+                 (OS_TICK     ) 0u, 
+                 (void       *)(CPU_INT32U) 1, 
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                 (OS_ERR     *)&err);
     
+    OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
+                 (CPU_CHAR   *)"Move Forwards", 
+                 (OS_TASK_PTR ) moveForward, 
+                 (void       *) 0, 
+                 (OS_PRIO     ) MOV_FORWARD_PRIO, 
+                 (CPU_STK    *)&moveForwardStk[0], 
+                 (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
+                 (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
+                 (OS_MSG_QTY  ) 0u, 
+                 (OS_TICK     ) 0u, 
+                 (void       *) (CPU_INT32U) 2, 
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                 (OS_ERR     *)&err);
+    
+    
+    OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
+                 (CPU_CHAR   *)"Move Backwards", 
+                 (OS_TASK_PTR ) moveBackward, 
+                 (void       *) 0, 
+                 (OS_PRIO     ) MOV_BACKWARD_PRIO, 
+                 (CPU_STK    *)&moveBackwardStk[0], 
+                 (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
+                 (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
+                 (OS_MSG_QTY  ) 0u, 
+                 (OS_TICK     ) 0u, 
+                 (void       *) (CPU_INT32U) 2, 
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                 (OS_ERR     *)&err);
+    
+    OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
+                 (CPU_CHAR   *)"Left Turn", 
+                 (OS_TASK_PTR ) leftTurn, 
+                 (void       *) 0, 
+                 (OS_PRIO     ) LEFT_TURN_PRIO, 
+                 (CPU_STK    *)&leftTurnStk[0], 
+                 (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+                 (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+                 (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, 
+                 (void       *) (CPU_INT32U) 2, 
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                 (OS_ERR     *)&err);
+    
+    OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
+                 (CPU_CHAR   *)"Right Turn", 
+                 (OS_TASK_PTR ) rightTurn, 
+                 (void       *) 0, 
+                 (OS_PRIO     ) RIGHT_TURN_PRIO, 
+                 (CPU_STK    *)&rightTurnStk[0], 
+                 (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
+                 (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
+                 (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, 
+                 (void       *) (CPU_INT32U) 2, 
+                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                 (OS_ERR     *)&err);
+
     /* Delete this task */
     OSTaskDel((OS_TCB *)0, &err);
     
@@ -198,7 +273,6 @@ static  void  moveForward (void  *p_arg)
       }
     }
     
-    
     //  three seconds???
     for(k=0; k<WORKLOAD1; k++)
     {
@@ -207,8 +281,10 @@ static  void  moveForward (void  *p_arg)
       }
      }
     
-    OSTaskDel((OS_TCB *)0, &err);   
-
+    // OSTaskDel((OS_TCB *)0, &err);   
+    OSTimeDly(2,
+              OS_OPT_TIME_PERIODIC,
+              &err);
 }
 
 
@@ -231,23 +307,25 @@ static  void  LEDBlink (void  *p_arg)
     }
     
     BSP_LED_Off(0u);
-   OSTaskDel((OS_TCB *)0, &err);
-
+    // OSTaskDel((OS_TCB *)0, &err);
+    OSTimeDly(2,
+              OS_OPT_TIME_PERIODIC,
+              &err);
 }
 
-static  void AppTaskThree (void *p_arg)
+static  void moveBackward (void *p_arg)
 {
-  
+    OS_ERR      err;
 }
 
-static  void AppTaskFour (void *p_arg)
+static  void leftTurn (void *p_arg)
 {
-  
+    OS_ERR      err;
 }
 
-static  void AppTaskFive (void *p_arg)
+static  void rightTurn (void *p_arg)
 {
-  
+    OS_ERR      err;
 }
 
 static  void  AppRobotMotorDriveSensorEnable ()
