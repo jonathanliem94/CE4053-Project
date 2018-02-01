@@ -51,7 +51,7 @@
 #define WORKLOAD1                     3
 #define WORKLOAD2                     3
 
-
+// how many clock cycles per OSTickCtr
 #define TIMERDIV                      (BSP_CPUClkFreq() / (CPU_INT32U)OSCfg_TickRate_Hz)
 
 
@@ -97,8 +97,8 @@ CPU_INT32U      measure=0;
 */
 
 static  void        AppRobotMotorDriveSensorEnable    ();
-        void        IntWheelSensor                    ();
-        void        RoboTurn                          (tSide dir, CPU_INT16U seg, CPU_INT16U speed);
+void        IntWheelSensor                    ();
+void        RoboTurn                          (tSide dir, CPU_INT16U seg, CPU_INT16U speed);
 
 static  void        AppTaskStart                 (void  *p_arg);
 static  void        LEDBlink                   (void  *p_arg);
@@ -124,26 +124,26 @@ static  void        rightTurn                   (void  *p_arg);
 
 int  main (void)
 {
-    OS_ERR  err;
-
-    BSP_IntDisAll();                                            /* Disable all interrupts.                              */
-    OSInit(&err);                                               /* Init uC/OS-III.                                      */
-
-    OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,           /* Create the start task                                */
-                 (CPU_CHAR   *)"App Task Start",
-                 (OS_TASK_PTR ) AppTaskStart,
-                 (void       *) 0,
-                 (OS_PRIO     ) APP_TASK_START_PRIO,
-                 (CPU_STK    *)&AppTaskStartStk[0],
-                 (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10u,
-                 (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
-                 (OS_MSG_QTY  ) 0u,
-                 (OS_TICK     ) 0u,
-                 (void       *) (CPU_INT32U) 0, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
-                 (OS_ERR     *)&err);
-
-    OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
+  OS_ERR  err;
+  
+  BSP_IntDisAll();                                            /* Disable all interrupts.                              */
+  OSInit(&err);                                               /* Init uC/OS-III.                                      */
+  
+  OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,           /* Create the start task                                */
+               (CPU_CHAR   *)"App Task Start",
+               (OS_TASK_PTR ) AppTaskStart,
+               (void       *) 0,
+               (OS_PRIO     ) APP_TASK_START_PRIO,
+               (CPU_STK    *)&AppTaskStartStk[0],
+               (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10u,
+               (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
+               (OS_MSG_QTY  ) 0u,
+               (OS_TICK     ) 0u,
+               (void       *) (CPU_INT32U) 0, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR),
+               (OS_ERR     *)&err);
+  
+  OSStart(&err);                                              /* Start multitasking (i.e. give control to uC/OS-III). */
 }
 
 
@@ -165,275 +165,295 @@ int  main (void)
 
 static  void  AppTaskStart (void  *p_arg)
 {
-    CPU_INT32U  clk_freq;
-    CPU_INT32U  cnts;
-    OS_ERR      err;
-    (void)&p_arg;
-    BSP_Init();                                                 /* Initialize BSP functions                             */
-    CPU_Init();                                                 /* Initialize the uC/CPU services                       */
-    clk_freq = BSP_CPUClkFreq();                                /* Determine SysTick reference freq.                    */
-    cnts     = clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;        /* Determine nbr SysTick increments                     */
-    OS_CPU_SysTickInit(cnts);                                   /* Init uC/OS periodic time src (SysTick).              */
-    CPU_TS_TmrFreqSet(clk_freq);
-    
-    /* Enable Wheel ISR Interrupt */
-    AppRobotMotorDriveSensorEnable();
-    
-    /* Initialise the 2 Main Tasks to  Deleted State */
-
-    OSTaskCreate((OS_TCB     *)&LEDBlinkTCB, 
-                 (CPU_CHAR   *)"LED Blink", 
-                 (OS_TASK_PTR ) LEDBlink, 
-                 (void       *) 0, 
-                 (OS_PRIO     ) LED_BLINK_PRIO, 
-                 (CPU_STK    *)&LEDBlinkStk[0], 
-                 (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
-                 (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
-                 (OS_MSG_QTY  ) 0u, 
-                 (OS_TICK     ) 0u, 
-                 (void       *)(CPU_INT32U) 1, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                 (OS_ERR     *)&err);
-    
-    OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
-                 (CPU_CHAR   *)"Move Forwards", 
-                 (OS_TASK_PTR ) moveForward, 
-                 (void       *) 0, 
-                 (OS_PRIO     ) MOV_FORWARD_PRIO, 
-                 (CPU_STK    *)&moveForwardStk[0], 
-                 (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
-                 (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
-                 (OS_MSG_QTY  ) 0u, 
-                 (OS_TICK     ) 0u, 
-                 (void       *) (CPU_INT32U) 2, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                 (OS_ERR     *)&err);
-    
-    
-    OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
-                 (CPU_CHAR   *)"Move Backwards", 
-                 (OS_TASK_PTR ) moveBackward, 
-                 (void       *) 0, 
-                 (OS_PRIO     ) MOV_BACKWARD_PRIO, 
-                 (CPU_STK    *)&moveBackwardStk[0], 
-                 (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
-                 (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
-                 (OS_MSG_QTY  ) 0u, 
-                 (OS_TICK     ) 0u, 
-                 (void       *) (CPU_INT32U) 2, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                 (OS_ERR     *)&err);
-    
-    OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
-                 (CPU_CHAR   *)"Left Turn", 
-                 (OS_TASK_PTR ) leftTurn, 
-                 (void       *) 0, 
-                 (OS_PRIO     ) LEFT_TURN_PRIO, 
-                 (CPU_STK    *)&leftTurnStk[0], 
-                 (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
-                 (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
-                 (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, 
-                 (void       *) (CPU_INT32U) 2, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                 (OS_ERR     *)&err);
-    
-    OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
-                 (CPU_CHAR   *)"Right Turn", 
-                 (OS_TASK_PTR ) rightTurn, 
-                 (void       *) 0, 
-                 (OS_PRIO     ) RIGHT_TURN_PRIO, 
-                 (CPU_STK    *)&rightTurnStk[0], 
-                 (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
-                 (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
-                 (OS_MSG_QTY  ) 0u, (OS_TICK     ) 0u, 
-                 (void       *) (CPU_INT32U) 2, 
-                 (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                 (OS_ERR     *)&err);
-
-    /* Delete this task */
-    OSTaskDel((OS_TCB *)0, &err);
-    
+  CPU_INT32U  clk_freq;
+  CPU_INT32U  cnts;
+  OS_ERR      err;
+  (void)&p_arg;
+  BSP_Init();                                                 /* Initialize BSP functions                             */
+  CPU_Init();                                                 /* Initialize the uC/CPU services                       */
+  clk_freq = BSP_CPUClkFreq();                                /* Determine SysTick reference freq.                    */
+  cnts     = clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;        /* Determine nbr SysTick increments                     */
+  OS_CPU_SysTickInit(cnts);                                   /* Init uC/OS periodic time src (SysTick).              */
+  CPU_TS_TmrFreqSet(clk_freq);
+  
+  /* Enable Wheel ISR Interrupt */
+  AppRobotMotorDriveSensorEnable();
+  
+  /* Initialise the 2 Main Tasks to  Deleted State */
+  
+  OSTaskCreate((OS_TCB     *)&LEDBlinkTCB, 
+               (CPU_CHAR   *)"LED Blink", 
+               (OS_TASK_PTR ) LEDBlink, 
+               (void       *) 0, 
+               (OS_PRIO     ) LED_BLINK_PRIO, 
+               (CPU_STK    *)&LEDBlinkStk[0], 
+               (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *)(CPU_INT32U) 1, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+  
+  OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
+               (CPU_CHAR   *)"Move Forwards", 
+               (OS_TASK_PTR ) moveForward, 
+               (void       *) 0, 
+               (OS_PRIO     ) MOV_FORWARD_PRIO, 
+               (CPU_STK    *)&moveForwardStk[0], 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 2, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+  
+  
+  OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
+               (CPU_CHAR   *)"Move Backwards", 
+               (OS_TASK_PTR ) moveBackward, 
+               (void       *) 0, 
+               (OS_PRIO     ) MOV_BACKWARD_PRIO, 
+               (CPU_STK    *)&moveBackwardStk[0], 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 3, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+  
+  OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
+               (CPU_CHAR   *)"Left Turn", 
+               (OS_TASK_PTR ) leftTurn, 
+               (void       *) 0, 
+               (OS_PRIO     ) LEFT_TURN_PRIO, 
+               (CPU_STK    *)&leftTurnStk[0], 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 4, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+  
+  OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
+               (CPU_CHAR   *)"Right Turn", 
+               (OS_TASK_PTR ) rightTurn, 
+               (void       *) 0, 
+               (OS_PRIO     ) RIGHT_TURN_PRIO, 
+               (CPU_STK    *)&rightTurnStk[0], 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 5, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+  
+  /* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
+  
 }
-
-static  void  moveForward (void  *p_arg)
-{ 
-    OS_ERR      err;
-    CPU_INT32U  k, i, j;
-    
-    if(iMove > 0)       //      start with iMove = 10
-    {
-      if(iMove%2==0)
-      {  
-      RoboTurn(FRONT, 16, 50);
-      iMove--;
-      }
-      else{
-        RoboTurn(BACK, 16, 50);
-        iMove++;
-      }
-    }
-    
-    //  three seconds???
-    for(k=0; k<WORKLOAD1; k++)
-    {
-      for(i=0; i <ONESECONDTICK; i++){
-        j=2*i;
-      }
-     }
-    
-    // OSTaskDel((OS_TCB *)0, &err);   
-    OSTimeDly(2,
-              OS_OPT_TIME_PERIODIC,
-              &err);
-}
-
 
 static  void  LEDBlink (void  *p_arg)
 {   
-    OS_ERR      err;
-    CPU_INT32U  i,k,j=0;
-   
-    for(i=0; i <(ONESECONDTICK); i++)
-    {
-      j = ((i * 2) + j);
-    }
-    
-    BSP_LED_Off(0u);
-    for(k=0; k<5; k++)
-    {
-      BSP_LED_Toggle(0u);
-      for(i=0; i <ONESECONDTICK/2; i++)
-         j = ((i * 2)+j);
-    }
-    
-    BSP_LED_Off(0u);
-    // OSTaskDel((OS_TCB *)0, &err);
-    OSTimeDly(2,
-              OS_OPT_TIME_PERIODIC,
-              &err);
+  OS_ERR      err;
+  CPU_INT32U  i,k,j=0;
+  
+  //    for(i=0; i <(ONESECONDTICK); i++)
+  //    {
+  //      j = ((i * 2) + j);
+  //    }
+  //    
+  
+  BSP_LED_Off(0u);
+  for(k=0; k<10; k++)
+  {
+    BSP_LED_Toggle(0u);
+    for(i=0; i <ONESECONDTICK/4; i++)
+      j = ((i * 2)+j);
+  }
+  
+  BSP_LED_Off(0u);
+  // OSTaskDel((OS_TCB *)0, &err);
+
+  
 }
+
+
+static  void  moveForward (void  *p_arg)
+{ 
+  OS_ERR      err;
+  CPU_INT32U  k, i, j;
+  
+  RoboTurn(FRONT, 16, 50);
+  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  {
+    for(i=0; i <ONESECONDTICK; i++){
+      j=2*i;
+    }
+  }
+
+  
+}
+
 
 static  void moveBackward (void *p_arg)
 {
-    OS_ERR      err;
+  OS_ERR      err;
+  CPU_INT32U  k, i, j;
+  
+  RoboTurn(BACK, 16, 50);
+  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  {
+    for(i=0; i <ONESECONDTICK; i++){
+      j=2*i;
+    }
+  }
+
+  
 }
 
 static  void leftTurn (void *p_arg)
 {
-    OS_ERR      err;
+  OS_ERR      err;
+  CPU_INT32U  k, i, j;
+  
+  RoboTurn(LEFT_SIDE, 16, 50);
+  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  {
+    for(i=0; i <ONESECONDTICK; i++){
+      j=2*i;
+    }
+  }
+
+  
 }
 
 static  void rightTurn (void *p_arg)
 {
-    OS_ERR      err;
+  OS_ERR      err;
+  CPU_INT32U  k, i, j;
+  
+  RoboTurn(RIGHT_SIDE, 16, 50);
+  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  {
+    for(i=0; i <ONESECONDTICK; i++){
+      j=2*i;
+    }
+  }
+
+  
 }
 
 static  void  AppRobotMotorDriveSensorEnable ()
 {
-    BSP_WheelSensorEnable();
-    BSP_WheelSensorIntEnable(RIGHT_SIDE, SENSOR_A, (CPU_FNCT_VOID)IntWheelSensor);
-    BSP_WheelSensorIntEnable(LEFT_SIDE, SENSOR_A, (CPU_FNCT_VOID)IntWheelSensor);
+  BSP_WheelSensorEnable();
+  BSP_WheelSensorIntEnable(RIGHT_SIDE, SENSOR_A, (CPU_FNCT_VOID)IntWheelSensor);
+  BSP_WheelSensorIntEnable(LEFT_SIDE, SENSOR_A, (CPU_FNCT_VOID)IntWheelSensor);
 }
 
 
 void IntWheelSensor()
 {
-	CPU_INT32U         ulStatusR_A;
-	CPU_INT32U         ulStatusL_A;
-
-	static CPU_INT08U CountL = 0;
-	static CPU_INT08U CountR = 0;
-
-	static CPU_INT08U data = 0;
-
-	ulStatusR_A = GPIOPinIntStatus(RIGHT_IR_SENSOR_A_PORT, DEF_TRUE);
-	ulStatusL_A = GPIOPinIntStatus(LEFT_IR_SENSOR_A_PORT, DEF_TRUE);
-
-        if (ulStatusR_A & RIGHT_IR_SENSOR_A_PIN)
-        {
-          GPIOPinIntClear(RIGHT_IR_SENSOR_A_PORT, RIGHT_IR_SENSOR_A_PIN);           /* Clear interrupt.*/
-          CountR = CountR + 1;
-        }
-
-        if (ulStatusL_A & LEFT_IR_SENSOR_A_PIN)
-        {
-          GPIOPinIntClear(LEFT_IR_SENSOR_A_PORT, LEFT_IR_SENSOR_A_PIN);
-          CountL = CountL + 1;
-        }
-
-	if((CountL >= Left_tgt) && (CountR >= Right_tgt))
-        {
-          data = 0x11;
-          Left_tgt = 0;
-          Right_tgt = 0;
-          CountL = 0;
-          CountR = 0;
-          BSP_MotorStop(LEFT_SIDE);
-          BSP_MotorStop(RIGHT_SIDE);
-        }
-        else if(CountL >= Left_tgt)
-        {
-          data = 0x10;
-          Left_tgt = 0;
-          CountL = 0;
-          BSP_MotorStop(LEFT_SIDE);
-        }
-        else if(CountR >= Right_tgt)
-        {
-          data = 0x01;
-          Right_tgt = 0;
-          CountR = 0;
-          BSP_MotorStop(RIGHT_SIDE);
-        }
-        return;
+  CPU_INT32U         ulStatusR_A;
+  CPU_INT32U         ulStatusL_A;
+  
+  static CPU_INT08U CountL = 0;
+  static CPU_INT08U CountR = 0;
+  
+  static CPU_INT08U data = 0;
+  
+  ulStatusR_A = GPIOPinIntStatus(RIGHT_IR_SENSOR_A_PORT, DEF_TRUE);
+  ulStatusL_A = GPIOPinIntStatus(LEFT_IR_SENSOR_A_PORT, DEF_TRUE);
+  
+  if (ulStatusR_A & RIGHT_IR_SENSOR_A_PIN)
+  {
+    GPIOPinIntClear(RIGHT_IR_SENSOR_A_PORT, RIGHT_IR_SENSOR_A_PIN);           /* Clear interrupt.*/
+    CountR = CountR + 1;
+  }
+  
+  if (ulStatusL_A & LEFT_IR_SENSOR_A_PIN)
+  {
+    GPIOPinIntClear(LEFT_IR_SENSOR_A_PORT, LEFT_IR_SENSOR_A_PIN);
+    CountL = CountL + 1;
+  }
+  
+  if((CountL >= Left_tgt) && (CountR >= Right_tgt))
+  {
+    data = 0x11;
+    Left_tgt = 0;
+    Right_tgt = 0;
+    CountL = 0;
+    CountR = 0;
+    BSP_MotorStop(LEFT_SIDE);
+    BSP_MotorStop(RIGHT_SIDE);
+  }
+  else if(CountL >= Left_tgt)
+  {
+    data = 0x10;
+    Left_tgt = 0;
+    CountL = 0;
+    BSP_MotorStop(LEFT_SIDE);
+  }
+  else if(CountR >= Right_tgt)
+  {
+    data = 0x01;
+    Right_tgt = 0;
+    CountR = 0;
+    BSP_MotorStop(RIGHT_SIDE);
+  }
+  return;
 }
 
 void RoboTurn(tSide dir, CPU_INT16U seg, CPU_INT16U speed)
 {
-	Left_tgt = seg;
-        Right_tgt = seg;
-
-	BSP_MotorStop(LEFT_SIDE);
-	BSP_MotorStop(RIGHT_SIDE);
-
-        BSP_MotorSpeed(LEFT_SIDE, speed <<8u);
-	BSP_MotorSpeed(RIGHT_SIDE,speed <<8u);
-
-	switch(dir)
-	{
-            case FRONT :
-                    BSP_MotorDir(RIGHT_SIDE,FORWARD);
-                    BSP_MotorDir(LEFT_SIDE,FORWARD);
-                    BSP_MotorRun(LEFT_SIDE);
-                    BSP_MotorRun(RIGHT_SIDE);
-                    break;
-                    
-            case BACK :
-                    BSP_MotorDir(LEFT_SIDE,REVERSE);
-                    BSP_MotorDir(RIGHT_SIDE,REVERSE);
-                    BSP_MotorRun(RIGHT_SIDE);
-                    BSP_MotorRun(LEFT_SIDE);
-                    break;
-                    
-            case LEFT_SIDE :
-                    BSP_MotorDir(RIGHT_SIDE,FORWARD);
-                    BSP_MotorDir(LEFT_SIDE,REVERSE);
-                    BSP_MotorRun(LEFT_SIDE);
-                    BSP_MotorRun(RIGHT_SIDE);
-                    break;
-                    
-            case RIGHT_SIDE:
-                    BSP_MotorDir(LEFT_SIDE,FORWARD);
-                    BSP_MotorDir(RIGHT_SIDE,REVERSE);
-                    BSP_MotorRun(RIGHT_SIDE);
-                    BSP_MotorRun(LEFT_SIDE);
-                    break;
-                    
-            default:
-                    BSP_MotorStop(LEFT_SIDE);
-                    BSP_MotorStop(RIGHT_SIDE);
-                    break;
-	}
-
-	return;
+  Left_tgt = seg;
+  Right_tgt = seg;
+  
+  BSP_MotorStop(LEFT_SIDE);
+  BSP_MotorStop(RIGHT_SIDE);
+  
+  BSP_MotorSpeed(LEFT_SIDE, speed <<8u);
+  BSP_MotorSpeed(RIGHT_SIDE,speed <<8u);
+  
+  switch(dir)
+  {
+  case FRONT :
+    BSP_MotorDir(RIGHT_SIDE,FORWARD);
+    BSP_MotorDir(LEFT_SIDE,FORWARD);
+    BSP_MotorRun(LEFT_SIDE);
+    BSP_MotorRun(RIGHT_SIDE);
+    break;
+    
+  case BACK :
+    BSP_MotorDir(LEFT_SIDE,REVERSE);
+    BSP_MotorDir(RIGHT_SIDE,REVERSE);
+    BSP_MotorRun(RIGHT_SIDE);
+    BSP_MotorRun(LEFT_SIDE);
+    break;
+    
+  case LEFT_SIDE :
+    BSP_MotorDir(RIGHT_SIDE,FORWARD);
+    BSP_MotorDir(LEFT_SIDE,REVERSE);
+    BSP_MotorRun(LEFT_SIDE);
+    BSP_MotorRun(RIGHT_SIDE);
+    break;
+    
+  case RIGHT_SIDE:
+    BSP_MotorDir(LEFT_SIDE,FORWARD);
+    BSP_MotorDir(RIGHT_SIDE,REVERSE);
+    BSP_MotorRun(RIGHT_SIDE);
+    BSP_MotorRun(LEFT_SIDE);
+    break;
+    
+  default:
+    BSP_MotorStop(LEFT_SIDE);
+    BSP_MotorStop(RIGHT_SIDE);
+    break;
+  }
+  
+  return;
 }

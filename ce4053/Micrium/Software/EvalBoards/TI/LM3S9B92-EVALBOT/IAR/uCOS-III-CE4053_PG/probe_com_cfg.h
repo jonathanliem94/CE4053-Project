@@ -31,7 +31,8 @@
 *********************************************************************************************************
 */
 
-#define  PROBE_COM_CFG_RS232_EN                    DEF_ENABLED  /* Configure RS-232 communication availability.         */
+//#define  PROBE_COM_CFG_RS232_EN                    DEF_ENABLED  /* Configure RS-232 communication availability.         */
+#define  PROBE_COM_CFG_RS232_EN                    DEF_DISABLED 
 #define  PROBE_COM_CFG_TCPIP_EN                    DEF_DISABLED /* Configure TCP/IP communication availability.         */
 #define  PROBE_COM_CFG_USB_EN                      DEF_DISABLED /* Configure USB    communication availability.         */
 
