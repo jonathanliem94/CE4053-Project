@@ -54,7 +54,7 @@
 #define  MOV_BACKWARD_PRIO                              6u
 #define  LEFT_TURN_PRIO                              7u
 #define  RIGHT_TURN_PRIO                              8u
-
+#define  JobLED_BLINK_PRIO                              4u
 
 
 /*
@@ -70,7 +70,7 @@
 #define  MOV_BACKWARD_STK_SIZE                      128u
 #define  LEFT_TURN_STK_SIZE                      128u
 #define  RIGHT_TURN_STK_SIZE                      128u
-
+#define  JOB_LED_BLINK_STK_SIZE                  128u        
 
 /*
 *********************************************************************************************************

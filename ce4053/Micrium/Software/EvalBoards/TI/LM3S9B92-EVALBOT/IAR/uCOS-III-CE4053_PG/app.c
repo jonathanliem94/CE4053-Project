@@ -69,6 +69,9 @@ static  CPU_STK      AppTaskStartStk[APP_TASK_START_STK_SIZE];
 static  OS_TCB       LEDBlinkTCB;
 static  CPU_STK      LEDBlinkStk[LED_BLINK_STK_SIZE];
 
+static  OS_TCB       JobLEDBlinkTCB;
+static  CPU_STK      JobLEDBlinkStk[JOB_LED_BLINK_STK_SIZE];
+
 static  OS_TCB       moveForwardTCB;
 static  CPU_STK      moveForwardStk[MOV_FORWARD_STK_SIZE];
 
@@ -88,6 +91,8 @@ CPU_INT32U      iToken  = 0;
 CPU_INT32U      iCounter= 1;
 CPU_INT32U      iMove   = 10;
 CPU_INT32U      measure=0;
+OS_TMR LEDTmr;
+CPU_INT16U FLAG = 0; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
 
 
 /*
@@ -106,8 +111,8 @@ static  void        moveForward                   (void  *p_arg);
 static  void        moveBackward                   (void  *p_arg);
 static  void        leftTurn                   (void  *p_arg);
 static  void        rightTurn                   (void  *p_arg);
-
-
+static  void        callbackLEDBlink            (void  *p_arg);
+static  void        JobLEDBlink                 (void  *p_arg);
 
 /*
 *********************************************************************************************************
@@ -175,6 +180,7 @@ static  void  AppTaskStart (void  *p_arg)
   cnts     = clk_freq / (CPU_INT32U)OSCfg_TickRate_Hz;        /* Determine nbr SysTick increments                     */
   OS_CPU_SysTickInit(cnts);                                   /* Init uC/OS periodic time src (SysTick).              */
   CPU_TS_TmrFreqSet(clk_freq);
+  
   
   /* Enable Wheel ISR Interrupt */
   AppRobotMotorDriveSensorEnable();
@@ -260,16 +266,52 @@ static  void  AppTaskStart (void  *p_arg)
 static  void  LEDBlink (void  *p_arg)
 {   
   OS_ERR      err;
-  CPU_INT32U  i,k,j=0;
   
-  //    for(i=0; i <(ONESECONDTICK); i++)
-  //    {
-  //      j = ((i * 2) + j);
-  //    }
-  //    
+  OSTmrCreate ((OS_TMR          *)&LEDTmr,
+               (CPU_CHAR        *)"LED Timer",
+               (OS_TICK          )0, //one shot mode
+               (OS_TICK          )ONESECONDTICK*5,//period
+               (OS_OPT           )OS_OPT_TMR_PERIODIC,
+               (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
+               (void *)0,
+               (OS_ERR *)&err);
+  OSTmrStart ((OS_TMR *)&LEDTmr,
+              (OS_ERR *)&err);
   
-  BSP_LED_Off(0u);
-  for(k=0; k<10; k++)
+  while (1)
+  {
+    if ((FLAG & 0x1)==0x1)
+    {
+      OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
+                   (CPU_CHAR   *)"Job LED Blink", 
+                   (OS_TASK_PTR ) JobLEDBlink, 
+                   (void       *) 0, 
+                   (OS_PRIO     ) JobLED_BLINK_PRIO, 
+                   (CPU_STK    *)&JobLEDBlinkStk[0], 
+                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE / 10u, 
+                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE, 
+                   (OS_MSG_QTY  ) 0u, 
+                   (OS_TICK     ) 0u, 
+                   (void       *)(CPU_INT32U) 1, 
+                   (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+                   (OS_ERR     *)&err);
+    }
+  }
+}
+
+static  void  callbackLEDBlink (void  *p_arg)
+{   
+  //set flag
+  FLAG = FLAG | 0x1;
+}
+
+static  void  JobLEDBlink (void  *p_arg)
+{   
+  OS_ERR      err;
+  CPU_INT32U  k, i, j;
+  BSP_LED_Off(0u);      // turn led off
+  //    code below is to blink five times with half a second interval betw blinks
+  for(k=0; k<10; k++)   
   {
     BSP_LED_Toggle(0u);
     for(i=0; i <ONESECONDTICK/4; i++)
@@ -277,9 +319,10 @@ static  void  LEDBlink (void  *p_arg)
   }
   
   BSP_LED_Off(0u);
-  // OSTaskDel((OS_TCB *)0, &err);
-
-  
+  //    turn off again
+/* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
+            
 }
 
 
@@ -295,8 +338,8 @@ static  void  moveForward (void  *p_arg)
       j=2*i;
     }
   }
-
-  
+/* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
 }
 
 
@@ -312,7 +355,8 @@ static  void moveBackward (void *p_arg)
       j=2*i;
     }
   }
-
+/* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
   
 }
 
@@ -328,7 +372,8 @@ static  void leftTurn (void *p_arg)
       j=2*i;
     }
   }
-
+/* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
   
 }
 
@@ -344,7 +389,8 @@ static  void rightTurn (void *p_arg)
       j=2*i;
     }
   }
-
+/* Delete this task */
+  OSTaskDel((OS_TCB *)0, &err);
   
 }
 
