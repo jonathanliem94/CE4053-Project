@@ -51,6 +51,13 @@
 #define WORKLOAD1                     3
 #define WORKLOAD2                     3
 
+#define LED_BLINK_Proc                 0x01
+#define MOVE_FOR_Proc                   0x02
+#define MOVE_BACK_Proc                  0x04
+#define TURN_LEFT_Proc                  0x08
+#define TURN_RIGHT_Proc                 0x10
+
+
 // how many clock cycles per OSTickCtr
 #define TIMERDIV                      (BSP_CPUClkFreq() / (CPU_INT32U)OSCfg_TickRate_Hz)
 
@@ -92,7 +99,7 @@ CPU_INT32U      iCounter= 1;
 CPU_INT32U      iMove   = 10;
 CPU_INT32U      measure=0;
 OS_TMR LEDTmr;
-CPU_INT16U FLAG = 0; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
+CPU_INT16U FLAG = 0x01; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
 
 
 /*
@@ -266,22 +273,24 @@ static  void  AppTaskStart (void  *p_arg)
 static  void  LEDBlink (void  *p_arg)
 {   
   OS_ERR      err;
-  
+    while (1)
+  {
   OSTmrCreate ((OS_TMR          *)&LEDTmr,
                (CPU_CHAR        *)"LED Timer",
-               (OS_TICK          )0, //one shot mode
-               (OS_TICK          )ONESECONDTICK*5,//period
-               (OS_OPT           )OS_OPT_TMR_PERIODIC,
+               (OS_TICK          )3000, //one shot mode
+               (OS_TICK          )0,//period
+               (OS_OPT           )OS_OPT_TMR_ONE_SHOT,
                (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
                (void *)0,
                (OS_ERR *)&err);
   OSTmrStart ((OS_TMR *)&LEDTmr,
               (OS_ERR *)&err);
   
-  while (1)
-  {
-    if ((FLAG & 0x1)==0x1)
+//  while (1)
+//  {
+    if ((FLAG & LED_BLINK_Proc)==LED_BLINK_Proc)
     {
+//      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
       OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
                    (CPU_CHAR   *)"Job LED Blink", 
                    (OS_TASK_PTR ) JobLEDBlink, 
@@ -302,7 +311,7 @@ static  void  LEDBlink (void  *p_arg)
 static  void  callbackLEDBlink (void  *p_arg)
 {   
   //set flag
-  FLAG = FLAG | 0x1;
+  FLAG = FLAG | LED_BLINK_Proc;
 }
 
 static  void  JobLEDBlink (void  *p_arg)
