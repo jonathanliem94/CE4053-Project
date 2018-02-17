@@ -48,14 +48,14 @@
 #define OS_CFG_PRIO_MAX                 20u   /* Defines the maximum number of task priorities (see OS_PRIO data type) */
 
 #define OS_CFG_SCHED_LOCK_TIME_MEAS_EN  1u   /* Include code to measure scheduler lock time                           */
-#define OS_CFG_SCHED_ROUND_ROBIN_EN     0u   /* Include code for Round-Robin scheduling                               */ //Disabled-6
+#define OS_CFG_SCHED_ROUND_ROBIN_EN     1u   /* Include code for Round-Robin scheduling                               */ //Disabled-6
 #define OS_CFG_STK_SIZE_MIN            64u   /* Minimum allowable task stack size                                     */
 
 
                                              /* ----------------------------- EVENT FLAGS --------------------------- */
-#define OS_CFG_FLAG_EN                  0u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS             */ //Disabled-2
+#define OS_CFG_FLAG_EN                  1u   /* Enable (1) or Disable (0) code generation for EVENT FLAGS             */ //Disabled-2
 #define OS_CFG_FLAG_DEL_EN              0u   /*     Include code for OSFlagDel()                                      */
-#define OS_CFG_FLAG_MODE_CLR_EN         0u   /*     Include code for Wait on Clear EVENT FLAGS                        */
+#define OS_CFG_FLAG_MODE_CLR_EN         1u   /*     Include code for Wait on Clear EVENT FLAGS                        */
 #define OS_CFG_FLAG_PEND_ABORT_EN       0u   /*     Include code for OSFlagPendAbort()                                */
 
 

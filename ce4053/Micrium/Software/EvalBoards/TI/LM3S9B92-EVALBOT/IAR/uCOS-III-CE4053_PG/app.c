@@ -48,8 +48,8 @@
 #define TASK2PERIOD                   20
 
 
-#define WORKLOAD1                     3
-#define WORKLOAD2                     3
+#define WORKLOAD1                     2
+#define WORKLOAD2                     2
 
 #define LED_BLINK_Proc                 0x01
 #define MOVE_FOR_Proc                   0x02
@@ -99,7 +99,7 @@ CPU_INT32U      iCounter= 1;
 CPU_INT32U      iMove   = 10;
 CPU_INT32U      measure=0;
 OS_TMR LEDTmr;
-CPU_INT16U FLAG = 0x01; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
+OS_FLAG_GRP event_flag; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
 
 
 /*
@@ -140,6 +140,11 @@ int  main (void)
   
   BSP_IntDisAll();                                            /* Disable all interrupts.                              */
   OSInit(&err);                                               /* Init uC/OS-III.                                      */
+  
+  OSFlagCreate((OS_FLAG_GRP  *)&event_flag,
+               (CPU_CHAR     *)"Event Flag",
+               (OS_FLAGS      )0,
+               (OS_ERR       *)&err);
   
   OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,           /* Create the start task                                */
                (CPU_CHAR   *)"App Task Start",
@@ -273,24 +278,27 @@ static  void  AppTaskStart (void  *p_arg)
 static  void  LEDBlink (void  *p_arg)
 {   
   OS_ERR      err;
-    while (1)
-  {
+  OS_FLAGS event_flag;
   OSTmrCreate ((OS_TMR          *)&LEDTmr,
                (CPU_CHAR        *)"LED Timer",
-               (OS_TICK          )3000, //one shot mode
-               (OS_TICK          )0,//period
-               (OS_OPT           )OS_OPT_TMR_ONE_SHOT,
+               (OS_TICK          )0, //one shot mode
+               (OS_TICK          )5000,//period
+               (OS_OPT           )OS_OPT_TMR_PERIODIC,
                (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
                (void *)0,
                (OS_ERR *)&err);
   OSTmrStart ((OS_TMR *)&LEDTmr,
               (OS_ERR *)&err);
   
-//  while (1)
-//  {
-    if ((FLAG & LED_BLINK_Proc)==LED_BLINK_Proc)
-    {
-//      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
+  while (1)
+  {
+    OSFlagPend ((OS_FLAG_GRP  *)&event_flag,
+                (OS_FLAGS      )LED_BLINK_Proc,
+                (OS_TICK       )0,
+                (OS_OPT        )(OS_OPT_PEND_FLAG_SET_ALL+OS_OPT_PEND_FLAG_CONSUME),
+                (CPU_TS       *)0,
+                (OS_ERR       *)err);
+      //      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
       OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
                    (CPU_CHAR   *)"Job LED Blink", 
                    (OS_TASK_PTR ) JobLEDBlink, 
@@ -304,14 +312,18 @@ static  void  LEDBlink (void  *p_arg)
                    (void       *)(CPU_INT32U) 1, 
                    (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                    (OS_ERR     *)&err);
-    }
   }
 }
 
 static  void  callbackLEDBlink (void  *p_arg)
 {   
+  OS_ERR err;
+  OS_FLAGS event_flag;
   //set flag
-  FLAG = FLAG | LED_BLINK_Proc;
+  event_flag=OSFlagPost((OS_FLAG_GRP  *)&event_flag,
+                        (OS_FLAGS      )LED_BLINK_Proc,
+                        (OS_OPT      )OS_OPT_POST_FLAG_SET,
+                        (OS_ERR       *)&err);
 }
 
 static  void  JobLEDBlink (void  *p_arg)
