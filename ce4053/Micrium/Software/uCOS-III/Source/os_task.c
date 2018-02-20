@@ -240,6 +240,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
                     OS_TASK_PTR    p_task,
                     void          *p_arg,
                     OS_PRIO        prio,
+                    OS_PERIOD      period,
                     CPU_STK       *p_stk_base,
                     CPU_STK_SIZE   stk_limit,
                     CPU_STK_SIZE   stk_size,
@@ -357,7 +358,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */
 
     p_tcb->Prio          = prio;                            /* Save the task's priority                               */
-
+    p_tcb->Period        = period;
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */
 

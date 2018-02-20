@@ -235,7 +235,7 @@ void  OSTaskChangePrio (OS_TCB   *p_tcb,
 ************************************************************************************************************************
 */
 /*$PAGE*/
-void  OSTaskCreate (OS_TCB        *p_tcb,
+void  OSRecTaskCreate (OS_TCB        *p_tcb,
                     CPU_CHAR      *p_name,
                     OS_TASK_PTR    p_task,
                     void          *p_arg,

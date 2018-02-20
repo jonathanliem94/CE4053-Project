@@ -151,6 +151,7 @@ int  main (void)
                (OS_TASK_PTR ) AppTaskStart,
                (void       *) 0,
                (OS_PRIO     ) APP_TASK_START_PRIO,
+               (OS_PERIOD   ) 0u,
                (CPU_STK    *)&AppTaskStartStk[0],
                (CPU_STK_SIZE) APP_TASK_START_STK_SIZE / 10u,
                (CPU_STK_SIZE) APP_TASK_START_STK_SIZE,
@@ -204,6 +205,7 @@ static  void  AppTaskStart (void  *p_arg)
                (OS_TASK_PTR ) LEDBlink, 
                (void       *) 0, 
                (OS_PRIO     ) LED_BLINK_PRIO, 
+               (OS_PERIOD   ) 5u,
                (CPU_STK    *)&LEDBlinkStk[0], 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
@@ -217,7 +219,8 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"Move Forwards", 
                (OS_TASK_PTR ) moveForward, 
                (void       *) 0, 
-               (OS_PRIO     ) MOV_FORWARD_PRIO, 
+               (OS_PRIO     ) MOV_FORWARD_PRIO,  
+               (OS_PERIOD   ) 5u,
                (CPU_STK    *)&moveForwardStk[0], 
                (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
                (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
@@ -232,7 +235,8 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"Move Backwards", 
                (OS_TASK_PTR ) moveBackward, 
                (void       *) 0, 
-               (OS_PRIO     ) MOV_BACKWARD_PRIO, 
+               (OS_PRIO     ) MOV_BACKWARD_PRIO,  
+               (OS_PERIOD   ) 5u,
                (CPU_STK    *)&moveBackwardStk[0], 
                (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
                (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
@@ -246,7 +250,8 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"Left Turn", 
                (OS_TASK_PTR ) leftTurn, 
                (void       *) 0, 
-               (OS_PRIO     ) LEFT_TURN_PRIO, 
+               (OS_PRIO     ) LEFT_TURN_PRIO,  
+               (OS_PERIOD   ) 5u,
                (CPU_STK    *)&leftTurnStk[0], 
                (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
                (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
@@ -260,7 +265,8 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"Right Turn", 
                (OS_TASK_PTR ) rightTurn, 
                (void       *) 0, 
-               (OS_PRIO     ) RIGHT_TURN_PRIO, 
+               (OS_PRIO     ) RIGHT_TURN_PRIO,  
+               (OS_PERIOD   ) 5u,
                (CPU_STK    *)&rightTurnStk[0], 
                (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
                (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
@@ -275,58 +281,58 @@ static  void  AppTaskStart (void  *p_arg)
   
 }
 
+//static  void  LEDBlink (void  *p_arg)
+//{   
+//  OS_ERR      err;
+//  OS_FLAGS event_flag;
+//  OSTmrCreate ((OS_TMR          *)&LEDTmr,
+//               (CPU_CHAR        *)"LED Timer",
+//               (OS_TICK          )0, //one shot mode
+//               (OS_TICK          )5000,//period
+//               (OS_OPT           )OS_OPT_TMR_PERIODIC,
+//               (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
+//               (void *)0,
+//               (OS_ERR *)&err);
+//  OSTmrStart ((OS_TMR *)&LEDTmr,
+//              (OS_ERR *)&err);
+//  
+//  while (1)
+//  {
+//    OSFlagPend ((OS_FLAG_GRP  *)&event_flag,
+//                (OS_FLAGS      )LED_BLINK_Proc,
+//                (OS_TICK       )0,
+//                (OS_OPT        )(OS_OPT_PEND_FLAG_SET_ALL+OS_OPT_PEND_FLAG_CONSUME),
+//                (CPU_TS       *)0,
+//                (OS_ERR       *)err);
+//      //      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
+//      OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
+//                   (CPU_CHAR   *)"Job LED Blink", 
+//                   (OS_TASK_PTR ) JobLEDBlink, 
+//                   (void       *) 0, 
+//                   (OS_PRIO     ) JobLED_BLINK_PRIO, 
+//                   (CPU_STK    *)&JobLEDBlinkStk[0], 
+//                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE / 10u, 
+//                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE, 
+//                   (OS_MSG_QTY  ) 0u, 
+//                   (OS_TICK     ) 0u, 
+//                   (void       *)(CPU_INT32U) 1, 
+//                   (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+//                   (OS_ERR     *)&err);
+//  }
+//}
+//
+//static  void  callbackLEDBlink (void  *p_arg)
+//{   
+//  OS_ERR err;
+//  OS_FLAGS event_flag;
+//  //set flag
+//  event_flag=OSFlagPost((OS_FLAG_GRP  *)&event_flag,
+//                        (OS_FLAGS      )LED_BLINK_Proc,
+//                        (OS_OPT      )OS_OPT_POST_FLAG_SET,
+//                        (OS_ERR       *)&err);
+//}
+
 static  void  LEDBlink (void  *p_arg)
-{   
-  OS_ERR      err;
-  OS_FLAGS event_flag;
-  OSTmrCreate ((OS_TMR          *)&LEDTmr,
-               (CPU_CHAR        *)"LED Timer",
-               (OS_TICK          )0, //one shot mode
-               (OS_TICK          )5000,//period
-               (OS_OPT           )OS_OPT_TMR_PERIODIC,
-               (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
-               (void *)0,
-               (OS_ERR *)&err);
-  OSTmrStart ((OS_TMR *)&LEDTmr,
-              (OS_ERR *)&err);
-  
-  while (1)
-  {
-    OSFlagPend ((OS_FLAG_GRP  *)&event_flag,
-                (OS_FLAGS      )LED_BLINK_Proc,
-                (OS_TICK       )0,
-                (OS_OPT        )(OS_OPT_PEND_FLAG_SET_ALL+OS_OPT_PEND_FLAG_CONSUME),
-                (CPU_TS       *)0,
-                (OS_ERR       *)err);
-      //      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
-      OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
-                   (CPU_CHAR   *)"Job LED Blink", 
-                   (OS_TASK_PTR ) JobLEDBlink, 
-                   (void       *) 0, 
-                   (OS_PRIO     ) JobLED_BLINK_PRIO, 
-                   (CPU_STK    *)&JobLEDBlinkStk[0], 
-                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE / 10u, 
-                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE, 
-                   (OS_MSG_QTY  ) 0u, 
-                   (OS_TICK     ) 0u, 
-                   (void       *)(CPU_INT32U) 1, 
-                   (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-                   (OS_ERR     *)&err);
-  }
-}
-
-static  void  callbackLEDBlink (void  *p_arg)
-{   
-  OS_ERR err;
-  OS_FLAGS event_flag;
-  //set flag
-  event_flag=OSFlagPost((OS_FLAG_GRP  *)&event_flag,
-                        (OS_FLAGS      )LED_BLINK_Proc,
-                        (OS_OPT      )OS_OPT_POST_FLAG_SET,
-                        (OS_ERR       *)&err);
-}
-
-static  void  JobLEDBlink (void  *p_arg)
 {   
   OS_ERR      err;
   CPU_INT32U  k, i, j;

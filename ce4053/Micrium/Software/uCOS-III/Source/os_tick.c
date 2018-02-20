@@ -127,6 +127,7 @@ void  OS_TickTaskInit (OS_ERR  *p_err)
                  (OS_TASK_PTR )OS_TickTask,
                  (void       *)0,
                  (OS_PRIO     )OSCfg_TickTaskPrio,
+                 (OS_PERIOD   ) 0u,
                  (CPU_STK    *)OSCfg_TickTaskStkBasePtr,
                  (CPU_STK_SIZE)OSCfg_TickTaskStkLimit,
                  (CPU_STK_SIZE)OSCfg_TickTaskStkSize,

@@ -848,6 +848,7 @@ void  OS_TmrInit (OS_ERR  *p_err)
                  (OS_TASK_PTR )OS_TmrTask,
                  (void       *)0,
                  (OS_PRIO     )OSCfg_TmrTaskPrio,
+                 (OS_PERIOD   ) 0u,
                  (CPU_STK    *)OSCfg_TmrTaskStkBasePtr,
                  (CPU_STK_SIZE)OSCfg_TmrTaskStkLimit,
                  (CPU_STK_SIZE)OSCfg_TmrTaskStkSize,

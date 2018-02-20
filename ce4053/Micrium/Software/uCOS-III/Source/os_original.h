@@ -903,7 +903,6 @@ struct os_tcb {
 
     OS_STATE             TaskState;                         /* See OS_TASK_STATE_xxx                                  */
     OS_PRIO              Prio;                              /* Task priority (0 == highest)                           */
-    OS_PERIOD            Period;
     CPU_STK_SIZE         StkSize;                           /* Size of task stack (in number of stack elements)       */
     OS_OPT               Opt;                               /* Task options as passed by OSTaskCreate()               */
 
@@ -1576,7 +1575,6 @@ void          OSTaskCreate              (OS_TCB                *p_tcb,
                                          OS_TASK_PTR            p_task,
                                          void                  *p_arg,
                                          OS_PRIO                prio,
-                                         OS_PERIOD              period,
                                          CPU_STK               *p_stk_base,
                                          CPU_STK_SIZE           stk_limit,
                                          CPU_STK_SIZE           stk_size,

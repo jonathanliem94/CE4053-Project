@@ -71,7 +71,7 @@ typedef   CPU_INT32U      OS_OBJ_TYPE;                 /* Special flag to determ
 typedef   CPU_INT16U      OS_OPT;                      /* Holds function options                              <16>/32 */
 
 typedef   CPU_INT08U      OS_PRIO;                     /* Priority of a task,                               <8>/16/32 */
-
+typedef   CPU_INT08U      OS_PERIOD;                   /* Period of a task                                          8 */
 typedef   CPU_INT16U      OS_QTY;                      /* Quantity                                            <16>/32 */
 
 typedef   CPU_INT32U      OS_RATE_HZ;                  /* Rate in Hertz                                            32 */
