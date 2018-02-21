@@ -506,7 +506,7 @@ typedef  enum  os_err {
     OS_ERR_PRIO_EXIST                = 25201u,
     OS_ERR_PRIO                      = 25202u,
     OS_ERR_PRIO_INVALID              = 25203u,
-    OS_ERR_PERIOD_INVALID            = 25204u,
+
     OS_ERR_PTR_INVALID               = 25301u,
 
     OS_ERR_Q                         = 26000u,
@@ -632,7 +632,6 @@ typedef  struct  os_sem              OS_SEM;
 
 
 typedef  void                      (*OS_TASK_PTR)(void *p_arg);
-typedef void                            (*OS_TASK_CALLBACK)(void *p_arg);
 
 typedef  struct  os_tcb              OS_TCB;
 
@@ -895,8 +894,7 @@ struct os_tcb {
 
     CPU_STK             *StkBasePtr;                        /* Pointer to base address of stack                       */
 
-    OS_TASK_PTR          TaskEntryAddr;                     /* Pointer to task entry point address              */
-    OS_TASK_CALLBACK     callbacktest;                
+    OS_TASK_PTR          TaskEntryAddr;                     /* Pointer to task entry point address                    */
     void                *TaskEntryArg;                      /* Argument passed to task when it was created            */
 
     OS_PEND_DATA        *PendDataTblPtr;                    /* Pointer to list containing objects pended on           */
@@ -905,7 +903,6 @@ struct os_tcb {
 
     OS_STATE             TaskState;                         /* See OS_TASK_STATE_xxx                                  */
     OS_PRIO              Prio;                              /* Task priority (0 == highest)                           */
-    OS_PERIOD            Period;
     CPU_STK_SIZE         StkSize;                           /* Size of task stack (in number of stack elements)       */
     OS_OPT               Opt;                               /* Task options as passed by OSTaskCreate()               */
 
@@ -1576,10 +1573,8 @@ void          OSTaskChangePrio          (OS_TCB                *p_tcb,
 void          OSTaskCreate              (OS_TCB                *p_tcb,
                                          CPU_CHAR              *p_name,
                                          OS_TASK_PTR            p_task,
-                                          OS_TASK_CALLBACK     callbacktest,
                                          void                  *p_arg,
                                          OS_PRIO                prio,
-                                         OS_PERIOD              period,
                                          CPU_STK               *p_stk_base,
                                          CPU_STK_SIZE           stk_limit,
                                          CPU_STK_SIZE           stk_size,

@@ -32,10 +32,6 @@
 
 #include <os.h>
 
-OS_TMR          TempTimer;
-OS_ERR          TimerErr;
-OS_TCB      periodArr[255];
-CPU_INT32U      counter=0;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_task__c = "$Id: $";
 #endif
@@ -239,13 +235,11 @@ void  OSTaskChangePrio (OS_TCB   *p_tcb,
 ************************************************************************************************************************
 */
 /*$PAGE*/
-void  OSTaskCreate (OS_TCB        *p_tcb,
+void  OSRecTaskCreate (OS_TCB        *p_tcb,
                     CPU_CHAR      *p_name,
                     OS_TASK_PTR    p_task,
-                    OS_TASK_CALLBACK p_callback,
                     void          *p_arg,
                     OS_PRIO        prio,
-                    OS_PERIOD      period,
                     CPU_STK       *p_stk_base,
                     CPU_STK_SIZE   stk_limit,
                     CPU_STK_SIZE   stk_size,
@@ -310,10 +304,6 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     if (prio >= OS_CFG_PRIO_MAX) {                          /* Priority must be within 0 and OS_CFG_PRIO_MAX-1        */
         *p_err = OS_ERR_PRIO_INVALID;
         return;
- 
-    if (period <= 0) {                                      /* User must enter valid period (time must be more than 0)       */
-        *p_err = OS_ERR_PERIOD_INVALID;
-        return;        
     }
 #endif
 
@@ -367,7 +357,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */
 
     p_tcb->Prio          = prio;                            /* Save the task's priority                               */
-    p_tcb->Period        = period;                          /* Save the task's period                               */     
+
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */
 
@@ -383,29 +373,6 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     p_tcb->StkBasePtr    = p_stk_base;                      /* Save pointer to the base address of the stack          */
     p_tcb->StkSize       = stk_size;                        /* Save the stack size (in number of CPU_STK elements)    */
     p_tcb->Opt           = opt;                             /* Save task options                                      */
-
-    
-    
-////////////////////////////////////////////    Implementation of OS Timer      ///////////////////////////////////////
-//#if ((period!=0))
-//    OSTmrDel ((OS_TMR             *)&TempTimer,
-//             (OS_ERR              *)&TimerErr);
-//      
-//    OSTmrCreate ((OS_TMR          *)&TempTimer,         //      do we need to init timer name inside taskcreate? else may overwrite idk
-//                 (CPU_CHAR        *)"Temp Timer",        
-//                 (OS_TICK          )period,                  // number used for one shot mode
-//                 (OS_TICK          )0,                  //number used for periodic mode
-//                 (OS_OPT           )OS_OPT_TMR_ONE_SHOT,        // do one shot mode since when timer runs out, new task with timer will be created
-//                 (OS_TMR_CALLBACK_PTR)p_callback,
-//                 (void *)0,
-//                 (OS_ERR *)&TimerErr);
-//    OSTmrStart ((OS_TMR *)&TempTimer,
-//                (OS_ERR *)&TimerErr);
-// #endif  
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    End of implementation           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    
-
-
-
 
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u
     for (reg_nbr = 0u; reg_nbr < OS_CFG_TASK_REG_TBL_SIZE; reg_nbr++) {
@@ -430,9 +397,6 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
 #endif
 
     OSTaskQty++;                                            /* Increment the #tasks counter                           */
-//    if (period != (OS_PERIOD)0){
-          periodArr[0]=p_tcb;
-//    }
 
     if (OSRunning != OS_STATE_OS_RUNNING) {                 /* Return if multitasking has not started                 */
         OS_CRITICAL_EXIT();
@@ -446,157 +410,6 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
 
 /*$PAGE*/
 /*
-************************************************************************************************************************
-*                                                     SUSPEND A RECURSIVE TASK
-*
-* Description: This function allows you to delete a task.  The calling task can delete itself by specifying a NULL
-*              pointer for 'p_tcb'.  The deleted task is returned to the dormant state and can be re-activated by
-*              creating the deleted task again.
-*
-* Arguments  : p_tcb      is the TCB of the tack to delete
-*
-*              p_err      is a pointer to an error code returned by this function:
-*
-*                             OS_ERR_NONE                  if the call is successful
-*                             OS_ERR_STATE_INVALID         if the state of the task is invalid
-*                             OS_ERR_TASK_DEL_IDLE         if you attempted to delete uC/OS-III's idle task
-*                             OS_ERR_TASK_DEL_INVALID      if you attempted to delete uC/OS-III's ISR handler task
-*                             OS_ERR_TASK_DEL_ISR          if you tried to delete a task from an ISR
-************************************************************************************************************************
-*/
-
-#if OS_CFG_TASK_DEL_EN > 0u
-void  OSRecTaskDel (OS_TCB  *p_tcb,
-                 OS_ERR  *p_err)
-{
-    CPU_SR_ALLOC();
-
-
-#ifdef OS_SAFETY_CRITICAL
-    if (p_err == (OS_ERR *)0) {
-        OS_SAFETY_CRITICAL_EXCEPTION();
-        return;
-    }
-#endif
-
-#if OS_CFG_CALLED_FROM_ISR_CHK_EN > 0u
-    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* Not allowed to call from an ISR                        */
-       *p_err = OS_ERR_TASK_SUSPEND_ISR;
-        return;
-    }
-#endif
-
-    if (p_tcb == &OSIdleTaskTCB) {                          /* Make sure not suspending the idle task                 */
-        *p_err = OS_ERR_TASK_SUSPEND_IDLE;
-        return;
-    }
-
-#if OS_CFG_ISR_POST_DEFERRED_EN > 0u
-    if (p_tcb == &OSIntQTaskTCB) {                          /* Not allowed to suspend the ISR handler task            */
-        *p_err = OS_ERR_TASK_SUSPEND_INT_HANDLER;
-        return;
-    }
-#endif
-
-    CPU_CRITICAL_ENTER();
-    if (p_tcb == (OS_TCB *)0) {                             /* See if specified to suspend self                       */
-        p_tcb = OSTCBCurPtr;
-    }
-
-    if (p_tcb == OSTCBCurPtr) {
-        if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {    /* Can't suspend when the scheduler is locked             */
-            CPU_CRITICAL_EXIT();
-            *p_err = OS_ERR_SCHED_LOCKED;
-            return;
-        }
-    }
-        // reset stack
-
-    if ((p_tcb->Opt & OS_OPT_TASK_STK_CHK) != (OS_OPT)0) {         /* See if stack checking has been enabled                 */
-        if ((p_tcb->Opt & OS_OPT_TASK_STK_CLR) != (OS_OPT)0) {     /* See if stack needs to be cleared                       */
-            p_tcb->StkPtr = p_tcb->StkBasePtr;
-            for (int i = 0u; i < p_tcb->StkSize; i++) {               /* Stack grows from HIGH to LOW memory                    */
-                *(p_tcb->StkPtr) = (CPU_STK)0;                         /* Clear from bottom of stack and up!                     */
-                p_tcb->StkPtr++;
-            }
-        }
-    }
-//
-//    p_tcb->StkPtr = OSTaskStkInit(p_tcb->TaskEntryAddr,
-//                         p_tcb->TaskEntryArg,
-//                         p_tcb->StkBasePtr,
-//                         p_tcb->StkLimitPtr,
-//                         p_tcb->StkSize,
-//                         p_tcb->Opt);
-
-    *p_err = OS_ERR_NONE;
-    switch (p_tcb->TaskState) {
-        case OS_TASK_STATE_RDY:
-             OS_CRITICAL_ENTER_CPU_CRITICAL_EXIT();
-             p_tcb->TaskState  =  OS_TASK_STATE_SUSPENDED;
-             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-             OS_RdyListRemove(p_tcb);
-             OS_CRITICAL_EXIT_NO_SCHED();
-             break;
-
-        case OS_TASK_STATE_DLY:
-             p_tcb->TaskState  = OS_TASK_STATE_DLY_SUSPENDED;
-             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case OS_TASK_STATE_PEND:
-             p_tcb->TaskState  = OS_TASK_STATE_PEND_SUSPENDED;
-             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case OS_TASK_STATE_PEND_TIMEOUT:
-             p_tcb->TaskState  = OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED;
-             p_tcb->SuspendCtr = (OS_NESTING_CTR)1;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        case OS_TASK_STATE_SUSPENDED:
-        case OS_TASK_STATE_DLY_SUSPENDED:
-        case OS_TASK_STATE_PEND_SUSPENDED:
-        case OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
-             p_tcb->SuspendCtr++;
-             CPU_CRITICAL_EXIT();
-             break;
-
-        default:
-             CPU_CRITICAL_EXIT();
-             *p_err = OS_ERR_STATE_INVALID;
-             return;
-    }
-
-    OSSched();
-}
-#endif
-
-/*$PAGE*/
-/*
-************************************************************************************************************************
-*                                                     RESUME ALL RECURSIVE TASK
-************************************************************************************************************************
-*/
-void  OSRecTaskResume (OS_ERR  *p_err)
-{
-  int i=0;
-  counter++;
-  OS_ERR *err;
-  OS_TCB *p_tcb;
-  while(&periodArr[i]!=(OS_TCB *)0){
-        p_tcb=&periodArr[i];
-    OSTaskResume ((OS_TCB  *)p_tcb,(OS_ERR  *)&err);
-    }
-      OSSched();                                              /* Find new highest priority task                         */
-}
-
-/*$PAGE*/
-/*
-
 ************************************************************************************************************************
 *                                                     DELETE A TASK
 *
@@ -713,7 +526,6 @@ void  OSTaskDel (OS_TCB  *p_tcb,
 
     OS_TaskInitTCB(p_tcb);                                  /* Initialize the TCB to default values                   */
     p_tcb->TaskState = (OS_STATE)OS_TASK_STATE_DEL;         /* Indicate that the task was deleted                     */
-
 
     OS_CRITICAL_EXIT_NO_SCHED();
     OSSched();                                              /* Find new highest priority task                         */
