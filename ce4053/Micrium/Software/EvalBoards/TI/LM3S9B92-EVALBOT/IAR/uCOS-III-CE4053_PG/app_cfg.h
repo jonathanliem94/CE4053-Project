@@ -48,13 +48,17 @@
 #define  APP_TASK_REPEAT_ONE_PRIO                       2u
 #define  APP_TASK_REPEAT_TWO_PRIO                       3u
 
-
-#define  LED_BLINK_PRIO                              4u
-#define  MOV_FORWARD_PRIO                              5u
+/*      by right, the below priority will kick in when the tasks happen on LCM of the periods
+        for example, LED Blink happens every 5 seconds, and move forward every 10
+        so based on priority scheduling, LED Blink should happen first
+        this is already implemented in the Micrium, but not periodicity, which is what we need to do
+*/
+#define  LED_BLINK_PRIO                                 4u
+#define  MOV_FORWARD_PRIO                               5u
 #define  MOV_BACKWARD_PRIO                              6u
-#define  LEFT_TURN_PRIO                              7u
-#define  RIGHT_TURN_PRIO                              8u
-#define  JobLED_BLINK_PRIO                              4u
+#define  LEFT_TURN_PRIO                                 7u
+#define  RIGHT_TURN_PRIO                                8u
+//#define  JobLED_BLINK_PRIO                              4u
 
 
 /*

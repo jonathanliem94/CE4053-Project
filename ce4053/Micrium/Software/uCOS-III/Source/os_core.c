@@ -795,6 +795,8 @@ void  OS_IdleTaskInit (OS_ERR  *p_err)
                  (CPU_CHAR   *)((void *)"uC/OS-III Idle Task"),
                  (OS_TASK_PTR)OS_IdleTask,
                  (void       *)0,
+                 (OS_TASK_CALLBACK)    0,     //      added new callback function for use in its own timer
+                 (void       *) 0,               //      callback function's argument
                  (OS_PRIO     )(OS_CFG_PRIO_MAX - 1u),
                  (OS_PERIOD   ) 0u,
                  (CPU_STK    *)OSCfg_IdleTaskStkBasePtr,
