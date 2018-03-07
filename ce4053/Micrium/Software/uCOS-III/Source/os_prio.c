@@ -38,7 +38,7 @@ const  CPU_CHAR  *os_prio__c = "$Id: $";
 
 
 CPU_DATA   OSPrioTbl[OS_PRIO_TBL_SIZE];                     /* Declare the array local to this file to allow for  ... */
-                                                            /* ... optimization.  In other words, this allows the ... */
+AVL_Node                *AVL_root;                                                      /* ... optimization.  In other words, this allows the ... */
                                                             /* ... table to be located in fast memory                 */
 
 /*
@@ -57,13 +57,7 @@ CPU_DATA   OSPrioTbl[OS_PRIO_TBL_SIZE];                     /* Declare the array
 
 void  OS_PrioInit (void)
 {
-    CPU_DATA  i;
-
-
-                                                            /* Clear the bitmap table ... no task is ready            */
-    for (i = 0u; i < OS_PRIO_TBL_SIZE; i++) {
-         OSPrioTbl[i] = (CPU_DATA)0;
-    }
+    AVL_root=0;
 }
 
 /*
@@ -81,20 +75,14 @@ void  OS_PrioInit (void)
 ************************************************************************************************************************
 */
 
-OS_PRIO  OS_PrioGetHighest (void)
+OS_PRIO  OS_PrioGetHighest (AVL_Node* t)
 {
-    CPU_DATA  *p_tbl;
-    OS_PRIO    prio;
-
-
-    prio  = (OS_PRIO)0;
-    p_tbl = &OSPrioTbl[0];
-    while (*p_tbl == (CPU_DATA)0) {                         /* Search the bitmap table for the highest priority       */
-        prio += DEF_INT_CPU_NBR_BITS;                       /* Compute the step of each CPU_DATA entry                */
-        p_tbl++;
-    }
-    prio += (OS_PRIO)CPU_CntLeadZeros(*p_tbl);              /* Find the position of the first bit set at the entry    */
-    return (prio);
+    if( t == 0 )
+        return 0;
+    else if( t->AVL_node_left == 0 )
+        return t->priority;
+    else
+        return OS_PrioGetHighest( t->AVL_node_left );
 }
 
 /*
@@ -111,18 +99,39 @@ OS_PRIO  OS_PrioGetHighest (void)
 ************************************************************************************************************************
 */
 
-void  OS_PrioInsert (OS_PRIO  prio)
+AVL_Node*  OS_PrioInsert (AVL_Node *T, OS_PRIO  prio)
 {
-    CPU_DATA  bit;
-    CPU_DATA  bit_nbr;
-    OS_PRIO   ix;
-
-
-    ix             = prio / DEF_INT_CPU_NBR_BITS;
-    bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);
-    bit            = 1u;
-    bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
-    OSPrioTbl[ix] |= bit;
+    if(T==0)
+    {
+        T=(AVL_Node*)malloc(sizeof(AVL_Node));
+        T->priority=prio;
+        T->AVL_node_left=0;
+        T->AVL_node_right=0;
+    }
+    else
+        if(prio > T->priority)        // insert in right subtree
+        {
+            T->AVL_node_right=OS_PrioInsert(T->AVL_node_right,prio);
+            if(BF(T)==-2)
+                if(prio>T->AVL_node_right->priority)
+                    T=AVL_RR(T);
+                else
+                    T=AVL_RL(T);
+        }
+        else
+            if(prio<T->priority)
+            {
+                T->AVL_node_left=OS_PrioInsert(T->AVL_node_left,prio);
+                if(BF(T)==2)
+                    if(prio < T->AVL_node_left->priority)
+                        T=AVL_LL(T);
+                    else
+                        T=AVL_LR(T);
+            }
+        
+        T->height=AVL_height(T);
+        
+        return(T);
 }
 
 /*
@@ -139,16 +148,152 @@ void  OS_PrioInsert (OS_PRIO  prio)
 ************************************************************************************************************************
 */
 
-void  OS_PrioRemove (OS_PRIO  prio)
+AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio)
 {
-    CPU_DATA  bit;
-    CPU_DATA  bit_nbr;
-    OS_PRIO   ix;
+    AVL_Node *p;
+    if(T==0)
+    {
+        return 0;
+    }
+    else
+        if(prio > T->priority)        // insert in right subtree
+        {
+            T->AVL_node_right=OS_PrioRemove(T->AVL_node_right,prio);
+            if(BF(T)==2)
+                if(BF(T->AVL_node_left)>=0)
+                    T=AVL_LL(T);
+                else
+                    T=AVL_LR(T);
+        }
+        else
+            if(prio<T->priority)
+            {
+                T->AVL_node_left=OS_PrioRemove(T->AVL_node_left,prio);
+                if(BF(T)==-2)    //Rebalance during windup
+                    if(BF(T->AVL_node_right)<=0)
+                        T=AVL_RR(T);
+                    else
+                        T=AVL_RL(T);
+            }
+            else
+            {
+                //prio to be deleted is found
+                if(T->AVL_node_right!=0)
+                {    //delete its inorder succesor
+                    p=T->AVL_node_right;
+                    
+                    while(p->AVL_node_left!= 0)
+                        p=p->AVL_node_left;
+                    
+                    T->priority=p->priority;
+                    T->AVL_node_right=OS_PrioRemove(T->AVL_node_right,p->priority);
+                    
+                    if(BF(T)==2)//Rebalance during windup
+                        if(BF(T->AVL_node_left)>=0)
+                            T=AVL_LL(T);
+                        else
+                            T=AVL_LR(T);\
+                }
+                else
+                    return(T->AVL_node_left);
+            }
+    T->height=AVL_height(T);
+    return(T);
+}
+/*
+************************************************************************************************************************
+*                                                   NEW FUNCTIONS
+************************************************************************************************************************
+*/
 
+CPU_INT08U AVL_height(AVL_Node *T)
+{
+    CPU_INT08U lh,rh;
+    if(T==0)
+        return(0);
+    
+    if(T->AVL_node_left==0)
+        lh=0;
+    else
+        lh=1+T->AVL_node_left->height;
+        
+    if(T->AVL_node_right==0)
+        rh=0;
+    else
+        rh=1+T->AVL_node_right->height;
+    
+    if(lh>rh)
+        return(lh);
+    
+    return(rh);
+}
+ 
+AVL_Node *AVL_rotateright(AVL_Node *x)
+{
+    AVL_Node *y;
+    y=x->AVL_node_left;
+    x->AVL_node_left=y->AVL_node_right;
+    y->AVL_node_right=x;
+    x->height=AVL_height(x);
+    y->height=AVL_height(y);
+    return(y);
+}
 
-    ix             = prio / DEF_INT_CPU_NBR_BITS;
-    bit_nbr        = (CPU_DATA)prio & (DEF_INT_CPU_NBR_BITS - 1u);
-    bit            = 1u;
-    bit          <<= (DEF_INT_CPU_NBR_BITS - 1u) - bit_nbr;
-    OSPrioTbl[ix] &= ~bit;
+AVL_Node *AVL_rotateleft(AVL_Node *x)
+{
+    AVL_Node *y;
+    y=x->AVL_node_right;
+    x->AVL_node_right=y->AVL_node_left;
+    y->AVL_node_left=x;
+    x->height=AVL_height(x);
+    y->height=AVL_height(y);
+    
+    return(y);
+}
+
+AVL_Node *AVL_RR(AVL_Node *T)
+{
+    T=AVL_rotateleft(T);
+    return(T);
+}
+
+AVL_Node *AVL_LL(AVL_Node *T)
+{
+    T=AVL_rotateright(T);
+    return(T);
+}
+
+AVL_Node *AVL_LR(AVL_Node *T)
+{
+    T->AVL_node_left=AVL_rotateleft(T->AVL_node_left);
+    T=AVL_rotateright(T);
+    
+    return(T);
+}
+
+AVL_Node *AVL_RL(AVL_Node *T)
+{
+    T->AVL_node_right=AVL_rotateright(T->AVL_node_right);
+    T=AVL_rotateleft(T);
+    return(T);
+}
+
+/* Balance Factor */
+CPU_INT08U BF(AVL_Node *T)
+{
+    int lh,rh;
+    if(T==0)
+        return(0);
+ 
+    if(T->AVL_node_left==0)
+        lh=0;
+    else
+        lh=1+T->AVL_node_left->height;
+ 
+    if(T->AVL_node_right==0)
+        rh=0;
+    else
+        rh=1+T->AVL_node_right->height;
+ 
+    return(lh-rh);
 }

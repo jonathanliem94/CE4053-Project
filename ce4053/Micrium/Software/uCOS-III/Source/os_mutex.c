@@ -421,7 +421,7 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
             case OS_TASK_STATE_RDY:
                  OS_RdyListRemove(p_tcb);                   /* Remove from ready list at current priority             */
                  p_tcb->Prio = OSTCBCurPtr->Prio;           /* Raise owner's priority                                 */
-                 OS_PrioInsert(p_tcb->Prio);
+                 OS_PrioInsert(AVL_root,p_tcb->Prio);
                  OS_RdyListInsertHead(p_tcb);               /* Insert in ready list at new priority                   */
                  break;
 
@@ -701,7 +701,7 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     if (OSTCBCurPtr->Prio != p_mutex->OwnerOriginalPrio) {
         OS_RdyListRemove(OSTCBCurPtr);
         OSTCBCurPtr->Prio = p_mutex->OwnerOriginalPrio;     /* Lower owner's priority back to its original one        */
-        OS_PrioInsert(OSTCBCurPtr->Prio);
+        OS_PrioInsert(AVL_root,OSTCBCurPtr->Prio);
         OS_RdyListInsertTail(OSTCBCurPtr);                  /* Insert owner in ready list at new priority             */
         OSPrioCur         = OSTCBCurPtr->Prio;
     }

@@ -100,7 +100,7 @@ void  OSTaskChangePrio (OS_TCB   *p_tcb,
         case OS_TASK_STATE_RDY:
              OS_RdyListRemove(p_tcb);                       /* Remove from current priority                           */
              p_tcb->Prio = prio_new;                        /* Set new task priority                                  */
-             OS_PrioInsert(p_tcb->Prio);
+             OS_PrioInsert(AVL_root,p_tcb->Prio);
              if (self == DEF_TRUE) {
                  OS_RdyListInsertHead(p_tcb);
              } else {
@@ -393,7 +393,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
 
                                                             /* --------------- ADD TASK TO READY LIST --------------- */
     OS_CRITICAL_ENTER();
-    OS_PrioInsert(p_tcb->Prio);
+    OS_PrioInsert(AVL_root,p_tcb->Prio);
     OS_RdyListInsertTail(p_tcb);
 
 #if OS_CFG_DBG_EN > 0u

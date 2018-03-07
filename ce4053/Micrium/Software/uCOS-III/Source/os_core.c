@@ -298,7 +298,7 @@ void  OSIntExit (void)
         return;
     }
 
-    OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find highest priority                                  */
+    OSPrioHighRdy   = OS_PrioGetHighest(AVL_root);                  /* Find highest priority                                  */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;     /* Get highest priority task ready-to-run                 */
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task still the highest priority?               */
         CPU_INT_EN();                                       /* Yes                                                    */
@@ -370,7 +370,7 @@ void  OSSched (void)
     }
 
     CPU_INT_DIS();
-    OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
+    OSPrioHighRdy   = OS_PrioGetHighest(AVL_root);                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
         CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
@@ -680,7 +680,7 @@ void  OSStart (OS_ERR  *p_err)
 #endif
 
     if (OSRunning == OS_STATE_OS_STOPPED) {
-        OSPrioHighRdy   = OS_PrioGetHighest();              /* Find the highest priority                              */
+        OSPrioHighRdy   = OS_PrioGetHighest(AVL_root);              /* Find the highest priority                              */
         OSPrioCur       = OSPrioHighRdy;
         OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
         OSTCBCurPtr     = OSTCBHighRdyPtr;
@@ -2043,7 +2043,7 @@ void  OS_RdyListInit (void)
 
 void  OS_RdyListInsert (OS_TCB *p_tcb)
 {
-    OS_PrioInsert(p_tcb->Prio);
+    OS_PrioInsert(AVL_root,p_tcb->Prio);
     if (p_tcb->Prio == OSPrioCur) {                         /* Are we readying a task at the same prio?               */
         OS_RdyListInsertTail(p_tcb);                        /* Yes, insert readied task at the end of the list        */
     } else {
@@ -2369,7 +2369,7 @@ void  OS_RdyListRemove (OS_TCB *p_tcb)
             p_rdy_list->NbrEntries = (OS_OBJ_QTY)0;         /*      Yes, no more entries                              */
             p_rdy_list->HeadPtr    = (OS_TCB   *)0;
             p_rdy_list->TailPtr    = (OS_TCB   *)0;
-            OS_PrioRemove(p_tcb->Prio);
+            OS_PrioRemove(AVL_root,p_tcb->Prio);
         } else {
             p_rdy_list->NbrEntries--;                       /*      No,  one less entry                               */
             p_tcb2->PrevPtr        = (OS_TCB   *)0;         /*           adjust back link of new list head            */

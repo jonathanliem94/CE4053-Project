@@ -114,7 +114,7 @@ void        RoboTurn                          (tSide dir, CPU_INT16U seg, CPU_IN
 
 static  void        AppTaskStart                 (void  *p_arg);
 static  void        LEDBlink                   (void  *p_arg);
-static  void        CallBack                   (void  *p_arg);  //      just added for callback function in OSTaskCreate
+//static  void        CallBack                   (void  *p_arg);  //      just added for callback function in OSTaskCreate
 static  void        moveForward                   (void  *p_arg);
 static  void        moveBackward                   (void  *p_arg);
 static  void        leftTurn                   (void  *p_arg);
@@ -207,10 +207,10 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"LED Blink", 
                (OS_TASK_PTR ) LEDBlink, 
                (void       *) 0, 
-               (OS_TASK_CALLBACK) CallBack,     //      added new callback function for use in its own timer
+               (OS_TASK_CALLBACK) 0,     //      added new callback function for use in its own timer
                (void       *) 0,               //      callback function's argument
                (OS_PRIO     ) LED_BLINK_PRIO, 
-               (OS_PERIOD   ) 5u,
+               (OS_PERIOD   ) 0u,
                (CPU_STK    *)&LEDBlinkStk[0], 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
@@ -219,69 +219,77 @@ static  void  AppTaskStart (void  *p_arg)
                (void       *)(CPU_INT32U) 1, 
                (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                (OS_ERR     *)&err);
-//////////////////////////////////      create Move Forward Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
-//               (CPU_CHAR   *)"Move Forwards", 
-//               (OS_TASK_PTR ) moveForward, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) MOV_FORWARD_PRIO,  
-//               (OS_PERIOD   ) 10u,
-//               (CPU_STK    *)&moveForwardStk[0], 
-//               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 2, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+////////////////////////////////      create Move Forward Task   //////////////////////////////////////////  
+  OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
+               (CPU_CHAR   *)"Move Forwards", 
+               (OS_TASK_PTR ) moveForward, 
+               (void       *) 0, 
+               (OS_TASK_CALLBACK) 0,     //      added new callback function for use in its own timer
+               (void       *) 0,               //      callback function's argument
+               (OS_PRIO     ) MOV_FORWARD_PRIO,  
+               (OS_PERIOD   ) 10u,
+               (CPU_STK    *)&moveForwardStk[0], 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 2, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
   
-//////////////////////////////////      create Move Backward Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
-//               (CPU_CHAR   *)"Move Backwards", 
-//               (OS_TASK_PTR ) moveBackward, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) MOV_BACKWARD_PRIO,  
-//               (OS_PERIOD   ) 17u,
-//               (CPU_STK    *)&moveBackwardStk[0], 
-//               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 3, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+////////////////////////////////      create Move Backward Task   //////////////////////////////////////////  
+  OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
+               (CPU_CHAR   *)"Move Backwards", 
+               (OS_TASK_PTR ) moveBackward, 
+               (void       *) 0, 
+               (OS_TASK_CALLBACK) 0,     //      added new callback function for use in its own timer
+               (void       *) 0,               //      callback function's argument
+               (OS_PRIO     ) MOV_BACKWARD_PRIO,  
+               (OS_PERIOD   ) 17u,
+               (CPU_STK    *)&moveBackwardStk[0], 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 3, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
 
-//////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
-//               (CPU_CHAR   *)"Left Turn", 
-//               (OS_TASK_PTR ) leftTurn, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) LEFT_TURN_PRIO,  
-//               (OS_PERIOD   ) 25u,
-//               (CPU_STK    *)&leftTurnStk[0], 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 4, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
+  OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
+               (CPU_CHAR   *)"Left Turn", 
+               (OS_TASK_PTR ) leftTurn, 
+               (void       *) 0, 
+               (OS_TASK_CALLBACK) 0,     //      added new callback function for use in its own timer
+               (void       *) 0,               //      callback function's argument
+               (OS_PRIO     ) LEFT_TURN_PRIO,  
+               (OS_PERIOD   ) 25u,
+               (CPU_STK    *)&leftTurnStk[0], 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 4, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
 
-//////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
-//               (CPU_CHAR   *)"Right Turn", 
-//               (OS_TASK_PTR ) rightTurn, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) RIGHT_TURN_PRIO,  
-//               (OS_PERIOD   ) 47u,
-//               (CPU_STK    *)&rightTurnStk[0], 
-//               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 5, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
+  OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
+               (CPU_CHAR   *)"Right Turn", 
+               (OS_TASK_PTR ) rightTurn, 
+               (void       *) 0, 
+               (OS_TASK_CALLBACK) 0,     //      added new callback function for use in its own timer
+               (void       *) 0,               //      callback function's argument
+               (OS_PRIO     ) RIGHT_TURN_PRIO,  
+               (OS_PERIOD   ) 47u,
+               (CPU_STK    *)&rightTurnStk[0], 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 5, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
   
   /* Delete this task */
   OSTaskDel((OS_TCB *)0, &err); //      this deletes the AppTaskStart, leaving the above 5 tasks in the queue
@@ -358,30 +366,30 @@ static  void  LEDBlink (void  *p_arg)
   
             
 }
-
-static  void  CallBack (void  *p_arg)   //      not sure if we should pass in tcb or can do without doing so
-{
-  OS_ERR      err;
-  OSTaskDel((OS_TCB *)0, &err);
-  //    somehow need to create task based on argument we pass in --> so we can use this function for anything
-  //    for now, we test with one task --> LED Blinking
-  OSTaskCreate((OS_TCB     *)           &LEDBlinkTCB, 
-               (CPU_CHAR   *)           "LED Blink", 
-               (OS_TASK_PTR )           LEDBlink, 
-               (void       *)           0, 
-               (OS_TASK_CALLBACK)       CallBack,     //      added new callback function for use in its own timer
-               (void       *)           0,               //      callback function's argument --> maybe we pass in TCB name?
-               (OS_PRIO     )           LED_BLINK_PRIO, 
-               (OS_PERIOD   )           5u,
-               (CPU_STK    *)           &LEDBlinkStk[0], 
-               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE / 10u, 
-               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE, 
-               (OS_MSG_QTY  )           0u, 
-               (OS_TICK     )           0u, 
-               (void       *)           (CPU_INT32U) 1, 
-               (OS_OPT      )           (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-               (OS_ERR     *)           &err);
-}
+//
+//static  void  CallBack (void  *p_arg)   //      not sure if we should pass in tcb or can do without doing so
+//{
+//  OS_ERR      err;
+//  OSTaskDel((OS_TCB *)0, &err);
+//  //    somehow need to create task based on argument we pass in --> so we can use this function for anything
+//  //    for now, we test with one task --> LED Blinking
+//  OSTaskCreate((OS_TCB     *)           &LEDBlinkTCB, 
+//               (CPU_CHAR   *)           "LED Blink", 
+//               (OS_TASK_PTR )           LEDBlink, 
+//               (void       *)           0, 
+//               (OS_TASK_CALLBACK)       CallBack,     //      added new callback function for use in its own timer
+//               (void       *)           0,               //      callback function's argument --> maybe we pass in TCB name?
+//               (OS_PRIO     )           LED_BLINK_PRIO, 
+//               (OS_PERIOD   )           5u,
+//               (CPU_STK    *)           &LEDBlinkStk[0], 
+//               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE / 10u, 
+//               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE, 
+//               (OS_MSG_QTY  )           0u, 
+//               (OS_TICK     )           0u, 
+//               (void       *)           (CPU_INT32U) 1, 
+//               (OS_OPT      )           (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+//               (OS_ERR     *)           &err);
+//}
 static  void  moveForward (void  *p_arg)
 { 
   OS_ERR      err;
