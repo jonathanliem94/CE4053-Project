@@ -38,7 +38,7 @@ const  CPU_CHAR  *os_prio__c = "$Id: $";
 
 
 CPU_DATA   OSPrioTbl[OS_PRIO_TBL_SIZE];                     /* Declare the array local to this file to allow for  ... */
-AVL_Node                *AVL_root;                                                      /* ... optimization.  In other words, this allows the ... */
+OS_AVL_Node                *OS_PrioAVL_root;                                                      /* ... optimization.  In other words, this allows the ... */
                                                             /* ... table to be located in fast memory                 */
 
 /*
@@ -57,7 +57,7 @@ AVL_Node                *AVL_root;                                              
 
 void  OS_PrioInit (void)
 {
-    AVL_root=0;
+    OS_PrioAVL_root=0;
 }
 
 /*
@@ -75,7 +75,7 @@ void  OS_PrioInit (void)
 ************************************************************************************************************************
 */
 
-OS_PRIO  OS_PrioGetHighest (AVL_Node* t)
+OS_PRIO  OS_PrioGetHighest (OS_AVL_Node* t)
 {
     if( t == 0 )
         return 0;
@@ -99,11 +99,11 @@ OS_PRIO  OS_PrioGetHighest (AVL_Node* t)
 ************************************************************************************************************************
 */
 
-AVL_Node*  OS_PrioInsert (AVL_Node *T, OS_PRIO  prio)
+OS_AVL_Node*  OS_PrioInsert (OS_AVL_Node *T, OS_PRIO  prio)
 {
     if(T==0)
     {
-        T=(AVL_Node*)malloc(sizeof(AVL_Node));
+        T=(OS_AVL_Node*)malloc(sizeof(OS_AVL_Node));
         T->priority=prio;
         T->AVL_node_left=0;
         T->AVL_node_right=0;
@@ -112,24 +112,24 @@ AVL_Node*  OS_PrioInsert (AVL_Node *T, OS_PRIO  prio)
         if(prio > T->priority)        // insert in right subtree
         {
             T->AVL_node_right=OS_PrioInsert(T->AVL_node_right,prio);
-            if(BF(T)==-2)
+            if(OS_AVL_BF(T)==-2)
                 if(prio>T->AVL_node_right->priority)
-                    T=AVL_RR(T);
+                    T=OS_AVL_RR(T);
                 else
-                    T=AVL_RL(T);
+                    T=OS_AVL_RL(T);
         }
         else
             if(prio<T->priority)
             {
                 T->AVL_node_left=OS_PrioInsert(T->AVL_node_left,prio);
-                if(BF(T)==2)
+                if(OS_AVL_BF(T)==2)
                     if(prio < T->AVL_node_left->priority)
-                        T=AVL_LL(T);
+                        T=OS_AVL_LL(T);
                     else
-                        T=AVL_LR(T);
+                        T=OS_AVL_LR(T);
             }
         
-        T->height=AVL_height(T);
+        T->height=OS_AVL_height(T);
         
         return(T);
 }
@@ -148,9 +148,9 @@ AVL_Node*  OS_PrioInsert (AVL_Node *T, OS_PRIO  prio)
 ************************************************************************************************************************
 */
 
-AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio)
+OS_AVL_Node*  OS_PrioRemove (OS_AVL_Node *T, OS_PRIO  prio)
 {
-    AVL_Node *p;
+    OS_AVL_Node *p;
     if(T==0)
     {
         return 0;
@@ -159,21 +159,21 @@ AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio)
         if(prio > T->priority)        // insert in right subtree
         {
             T->AVL_node_right=OS_PrioRemove(T->AVL_node_right,prio);
-            if(BF(T)==2)
-                if(BF(T->AVL_node_left)>=0)
-                    T=AVL_LL(T);
+            if(OS_AVL_BF(T)==2)
+                if(OS_AVL_BF(T->AVL_node_left)>=0)
+                    T=OS_AVL_LL(T);
                 else
-                    T=AVL_LR(T);
+                    T=OS_AVL_LR(T);
         }
         else
             if(prio<T->priority)
             {
                 T->AVL_node_left=OS_PrioRemove(T->AVL_node_left,prio);
-                if(BF(T)==-2)    //Rebalance during windup
-                    if(BF(T->AVL_node_right)<=0)
-                        T=AVL_RR(T);
+                if(OS_AVL_BF(T)==-2)    //Rebalance during windup
+                    if(OS_AVL_BF(T->AVL_node_right)<=0)
+                        T=OS_AVL_RR(T);
                     else
-                        T=AVL_RL(T);
+                        T=OS_AVL_RL(T);
             }
             else
             {
@@ -188,16 +188,16 @@ AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio)
                     T->priority=p->priority;
                     T->AVL_node_right=OS_PrioRemove(T->AVL_node_right,p->priority);
                     
-                    if(BF(T)==2)//Rebalance during windup
-                        if(BF(T->AVL_node_left)>=0)
-                            T=AVL_LL(T);
+                    if(OS_AVL_BF(T)==2)//Rebalance during windup
+                        if(OS_AVL_BF(T->AVL_node_left)>=0)
+                            T=OS_AVL_LL(T);
                         else
-                            T=AVL_LR(T);\
+                            T=OS_AVL_LR(T);\
                 }
                 else
                     return(T->AVL_node_left);
             }
-    T->height=AVL_height(T);
+    T->height=OS_AVL_height(T);
     return(T);
 }
 /*
@@ -206,7 +206,7 @@ AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio)
 ************************************************************************************************************************
 */
 
-CPU_INT08U AVL_height(AVL_Node *T)
+CPU_INT08U OS_AVL_height(OS_AVL_Node *T)
 {
     CPU_INT08U lh,rh;
     if(T==0)
@@ -228,58 +228,58 @@ CPU_INT08U AVL_height(AVL_Node *T)
     return(rh);
 }
  
-AVL_Node *AVL_rotateright(AVL_Node *x)
+OS_AVL_Node *OS_AVL_rotateright(OS_AVL_Node *x)
 {
-    AVL_Node *y;
+    OS_AVL_Node *y;
     y=x->AVL_node_left;
     x->AVL_node_left=y->AVL_node_right;
     y->AVL_node_right=x;
-    x->height=AVL_height(x);
-    y->height=AVL_height(y);
+    x->height=OS_AVL_height(x);
+    y->height=OS_AVL_height(y);
     return(y);
 }
 
-AVL_Node *AVL_rotateleft(AVL_Node *x)
+OS_AVL_Node *OS_AVL_rotateleft(OS_AVL_Node *x)
 {
-    AVL_Node *y;
+    OS_AVL_Node *y;
     y=x->AVL_node_right;
     x->AVL_node_right=y->AVL_node_left;
     y->AVL_node_left=x;
-    x->height=AVL_height(x);
-    y->height=AVL_height(y);
+    x->height=OS_AVL_height(x);
+    y->height=OS_AVL_height(y);
     
     return(y);
 }
 
-AVL_Node *AVL_RR(AVL_Node *T)
+OS_AVL_Node *OS_AVL_RR(OS_AVL_Node *T)
 {
-    T=AVL_rotateleft(T);
+    T=OS_AVL_rotateleft(T);
     return(T);
 }
 
-AVL_Node *AVL_LL(AVL_Node *T)
+OS_AVL_Node *OS_AVL_LL(OS_AVL_Node *T)
 {
-    T=AVL_rotateright(T);
+    T=OS_AVL_rotateright(T);
     return(T);
 }
 
-AVL_Node *AVL_LR(AVL_Node *T)
+OS_AVL_Node *OS_AVL_LR(OS_AVL_Node *T)
 {
-    T->AVL_node_left=AVL_rotateleft(T->AVL_node_left);
-    T=AVL_rotateright(T);
+    T->AVL_node_left=OS_AVL_rotateleft(T->AVL_node_left);
+    T=OS_AVL_rotateright(T);
     
     return(T);
 }
 
-AVL_Node *AVL_RL(AVL_Node *T)
+OS_AVL_Node *OS_AVL_RL(OS_AVL_Node *T)
 {
-    T->AVL_node_right=AVL_rotateright(T->AVL_node_right);
-    T=AVL_rotateleft(T);
+    T->AVL_node_right=OS_AVL_rotateright(T->AVL_node_right);
+    T=OS_AVL_rotateleft(T);
     return(T);
 }
 
 /* Balance Factor */
-CPU_INT08U BF(AVL_Node *T)
+CPU_INT08U OS_AVL_BF(OS_AVL_Node *T)
 {
     int lh,rh;
     if(T==0)

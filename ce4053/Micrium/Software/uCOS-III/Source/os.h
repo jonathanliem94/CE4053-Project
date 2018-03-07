@@ -630,13 +630,13 @@ typedef  struct  os_q                OS_Q;
 
 typedef  struct  os_sem              OS_SEM;
 
-typedef struct AVL_Node           AVL_Node;
+typedef struct OS_AVL_Node           OS_AVL_Node;
 
-struct AVL_Node
+struct OS_AVL_Node
 {
     OS_PRIO priority;
-    AVL_Node*  AVL_node_left;
-    AVL_Node*  AVL_node_right;
+    OS_AVL_Node*  AVL_node_left;
+    OS_AVL_Node*  AVL_node_right;
     CPU_INT08U      height;
 };
 
@@ -1115,7 +1115,7 @@ OS_EXT            OS_PRIO                OSPrioCur;                   /* Priorit
 OS_EXT            OS_PRIO                OSPrioHighRdy;               /* Priority of highest priority task            */
 OS_EXT            OS_PRIO                OSPrioSaved;                 /* Saved priority level when Post Deferred      */
 extern            CPU_DATA               OSPrioTbl[OS_PRIO_TBL_SIZE];
-extern            AVL_Node                *AVL_root;
+extern            OS_AVL_Node                *OS_PrioAVL_root;
                                                                       /* QUEUES ------------------------------------- */
 #if OS_CFG_Q_EN   > 0u
 #if OS_CFG_DBG_EN > 0u
@@ -1981,22 +1981,22 @@ void          OS_Post1                  (OS_PEND_OBJ           *p_obj,
 
 void          OS_PrioInit               (void);
 
-AVL_Node*  OS_PrioInsert (AVL_Node *T, OS_PRIO  prio);
+OS_AVL_Node*  OS_PrioInsert (OS_AVL_Node *T, OS_PRIO  prio);
 
-AVL_Node*  OS_PrioRemove (AVL_Node *T, OS_PRIO  prio);
+OS_AVL_Node*  OS_PrioRemove (OS_AVL_Node *T, OS_PRIO  prio);
 
-OS_PRIO         OS_PrioGetHighest       (AVL_Node* t);
+OS_PRIO         OS_PrioGetHighest       (OS_AVL_Node* t);
  
 
-CPU_INT08U AVL_height( AVL_Node *T);
-AVL_Node *AVL_rotateright(AVL_Node *x);
-AVL_Node *AVL_rotateleft(AVL_Node *x);
-AVL_Node *AVL_RR(AVL_Node *T);
-AVL_Node *AVL_LL(AVL_Node *T);
-AVL_Node *AVL_LR(AVL_Node *T);
-AVL_Node *AVL_RL(AVL_Node *T);
+CPU_INT08U OS_AVL_height(OS_AVL_Node *T);
+OS_AVL_Node *OS_AVL_rotateright(OS_AVL_Node *x);
+OS_AVL_Node *OS_AVL_rotateleft(OS_AVL_Node *x);
+OS_AVL_Node *OS_AVL_RR(OS_AVL_Node *T);
+OS_AVL_Node *OS_AVL_LL(OS_AVL_Node *T);
+OS_AVL_Node *OS_AVL_LR(OS_AVL_Node *T);
+OS_AVL_Node *OS_AVL_RL(OS_AVL_Node *T);
 /* Balance Factor */
-CPU_INT08U BF(AVL_Node *T);
+CPU_INT08U OS_AVL_BF(OS_AVL_Node *T);
 
 
 
