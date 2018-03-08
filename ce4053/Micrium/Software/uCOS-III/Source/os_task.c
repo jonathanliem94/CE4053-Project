@@ -553,7 +553,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
 //    TASK[h.count].p_tcb = p_tcb;
 //    heap_push(&h,&TASK[h.count]);
 //    AVL_NAME(insert)(Rec_Task_Tree, period+OSTickCtr, p_tcb);
-    OSRecPeriod[period]=p_tcb;
+//    OSRecPeriod[period%1000]=p_tcb;
+    OSRecPeriod[0]=p_tcb;
   }
   
   else		

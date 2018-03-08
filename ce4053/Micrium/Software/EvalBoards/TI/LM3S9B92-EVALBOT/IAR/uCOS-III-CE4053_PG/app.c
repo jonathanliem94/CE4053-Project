@@ -188,7 +188,7 @@ static  void  AppTaskStart (void  *p_arg)
   
   /* Initialise the 2 Main Tasks to  Deleted State */
 //////////////////////////////////      create LED Blink Task   //////////////////////////////////////////
-  OSTaskCreate((OS_TCB     *)&LEDBlinkTCB, 
+  OSRecTaskCreate((OS_TCB     *)&LEDBlinkTCB, 
                (CPU_CHAR   *)"LED Blink", 
                (OS_TASK_PTR ) LEDBlink, 
                (void       *) 0, 
@@ -203,7 +203,7 @@ static  void  AppTaskStart (void  *p_arg)
                (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                (OS_ERR     *)&err);
 //////////////////////////////////      create Move Forward Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&moveForwardTCB, 
+//  OSRecTaskCreate((OS_TCB     *)&moveForwardTCB, 
 //               (CPU_CHAR   *)"Move Forwards", 
 //               (OS_TASK_PTR ) moveForward, 
 //               (void       *) 0, 
@@ -219,7 +219,7 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_ERR     *)&err);
   
 //////////////////////////////////      create Move Backward Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&moveBackwardTCB, 
+//  OSRecTaskCreate((OS_TCB     *)&moveBackwardTCB, 
 //               (CPU_CHAR   *)"Move Backwards", 
 //               (OS_TASK_PTR ) moveBackward, 
 //               (void       *) 0, 
@@ -235,7 +235,7 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&leftTurnTCB, 
+//  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
 //               (CPU_CHAR   *)"Left Turn", 
 //               (OS_TASK_PTR ) leftTurn, 
 //               (void       *) 0, 
@@ -251,7 +251,7 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
-//  OSTaskCreate((OS_TCB     *)&rightTurnTCB, 
+//  OSRecTaskCreate((OS_TCB     *)&rightTurnTCB, 
 //               (CPU_CHAR   *)"Right Turn", 
 //               (OS_TASK_PTR ) rightTurn, 
 //               (void       *) 0, 
