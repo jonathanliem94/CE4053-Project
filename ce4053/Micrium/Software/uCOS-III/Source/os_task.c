@@ -525,7 +525,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->Prio          = prio;                            /* Save the task's priority                               */		
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
-    p_tcb->Period        = period+OSTickCtr;
+    p_tcb->Period        = period;
+    p_tcb->Deadline      = period+OSTickCtr;
     p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */		
 #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u		
     if (time_quanta == (OS_TICK)0) {		

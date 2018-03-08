@@ -915,6 +915,7 @@ struct os_tcb {
     OS_STATE             TaskState;                         /* See OS_TASK_STATE_xxx                                  */
     OS_PRIO              Prio;                              /* Task priority (0 == highest)                           */
     OS_PERIOD            Period;
+    OS_DEADLINE          Deadline;                           
     CPU_STK_SIZE         StkSize;                           /* Size of task stack (in number of stack elements)       */
     OS_OPT               Opt;                               /* Task options as passed by OSTaskCreate()               */
 

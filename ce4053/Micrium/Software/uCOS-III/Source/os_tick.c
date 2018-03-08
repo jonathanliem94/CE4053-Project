@@ -36,7 +36,6 @@
 const  CPU_CHAR  *os_tick__c = "$Id: $";
 #endif
 CPU_INT16U tick_cnt = 0;
-CPU_INT16U second_cnt = 0;
 /*
 ************************************************************************************************************************
 *                                                  LOCAL PROTOTYPES
@@ -50,7 +49,7 @@ void OS_revive_rec_task(void)
   //    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
 //  for(int i = 0; i<128; i++)
 //  {
-    if (((OSRecPeriod[0]->Period)%OSTickCtr)==0)
+    if ((OSRecPeriod[0]->Period)==OSTickCtr)
     {				
       p_tcb = OSRecPeriod[0];
       CPU_STK_SIZE   j; 		
@@ -84,7 +83,8 @@ void OS_revive_rec_task(void)
       p_tcb->NamePtr       = p_name;                          /* Save task name                                         */ 		
       
       p_tcb->Prio          = prio;                            /* Save the task's priority                               */ 		
-      p_tcb->Period        = i+OSTickCtr;
+      p_tcb->Period        = period;
+      p_tcb->Deadline      =period+OSTickCtr;
       
       p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
       
@@ -122,12 +122,7 @@ void OS_revive_rec_task(void)
       
       //OSTaskCreateHook(p_tcb);                              		
       // OS_CRITICAL_ENTER();		
-      if (tick_cnt >= 1000)
-      {
-          tick_cnt=0;
-          second_cnt++;
-          
-      }
+      
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);		
       
