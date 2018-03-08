@@ -35,12 +35,122 @@
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_tick__c = "$Id: $";
 #endif
-
+CPU_INT16U tick_cnt = 0;
 /*
 ************************************************************************************************************************
 *                                                  LOCAL PROTOTYPES
 ************************************************************************************************************************
 */
+
+void OS_revive_rec_task(void)		
+{		
+
+    OS_TCB *p_tcb;	
+//    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
+    for(int i = 0; i<128; i++)
+    {
+      if ((OSRecPeriod[i]->Period)==OSTickCtr)
+  {				
+    p_tcb = OSRecPeriod[i];
+    CPU_STK_SIZE   i; 		
+#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
+    OS_OBJ_QTY     reg_nbr; 		
+#endif 		
+    CPU_STK       *p_sp; 		
+    CPU_SR_ALLOC(); 		
+ 		
+  //  *p_err = OS_ERR_NONE; 		
+ #if 1                                                          /* --------------- CLEAR THE TASK'S STACK --------------- */ 		
+    p_sp = p_tcb->StkBasePtr; 		
+    for (i = 0u; i < p_tcb->StkSize; i++) {                 /* Stack grows from HIGH to LOW memory                    */ 		
+      *p_sp = (CPU_STK)0;                                   /* Clear from bottom of stack and up!                     */ 		
+       p_sp++; 		
+    } 		
+                                                             /* ------- INITIALIZE THE STACK FRAME OF THE TASK ------- */ 		
+    p_sp = OSTaskStkInit(p_tcb->TaskEntryAddr, 		
+                         p_tcb->TaskEntryArg, 		
+                         p_tcb->StkBasePtr, 		
+                         p_tcb->StkLimitPtr, 		
+                         p_tcb->StkSize, 		
+                         p_tcb->Opt); 		
+      p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */ 		
+       		
+#if 0 		
+      /* -------------- INITIALIZE THE TCB FIELDS ------------- */ 		
+    p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */ 		
+    p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */ 		
+ 		
+    p_tcb->NamePtr       = p_name;                          /* Save task name                                         */ 		
+ 		
+    p_tcb->Prio          = prio;                            /* Save the task's priority                               */ 		
+    p_tcb->Period        = i+OSTickCtr;
+ 		
+    p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
+ 		
+    p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 		
+#endif 		
+#endif 		
+       		
+    p_tcb->TimeQuanta    = 0;   		
+     		
+#if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u 		
+    if (p_tcb->TimeQuanta == (OS_TICK)0) { 		
+        p_tcb->TimeQuantaCtr = OSSchedRoundRobinDfltTimeQuanta; 		
+    } else { 		
+        p_tcb->TimeQuantaCtr = p_tcb->TimeQuanta; 		
+    } 		
+#endif 		
+#if 0 		
+    p_tcb->ExtPtr        = p_ext;                           /* Save pointer to TCB extension                          */ 		
+    p_tcb->StkBasePtr    = p_stk_base;                      /* Save pointer to the base address of the stack          */ 		
+    p_tcb->StkSize       = stk_size;                        /* Save the stack size (in number of CPU_STK elements)    */ 		
+    p_tcb->Opt           = opt;                             /* Save task options                                      */ 		
+#endif 		
+     		
+#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
+    for (reg_nbr = 0u; reg_nbr < OS_CFG_TASK_REG_TBL_SIZE; reg_nbr++) { 		
+        p_tcb->RegTbl[reg_nbr] = (OS_REG)0; 		
+    } 		
+#endif 		
+#if 0 		
+#if OS_CFG_TASK_Q_EN > 0u 		
+    OS_MsgQInit(&p_tcb->MsgQ,                               /* Initialize the task's message queue                    */ 		
+                q_size); 		
+#endif 		
+#endif 		
+     		
+   		
+     //OSTaskCreateHook(p_tcb);                              		
+   // OS_CRITICAL_ENTER();		
+    tick_cnt = tick_cnt%100;	
+    OS_PrioInsert(p_tcb->Prio);		
+    OS_RdyListInsertTail(p_tcb);		
+	
+#if OS_CFG_DBG_EN > 0u		
+    OS_TaskDbgListAdd(p_tcb);		
+#endif		
+    OSTaskQty++;                                            		
+    if (OSRunning != OS_STATE_OS_RUNNING) {                 		
+        OS_CRITICAL_EXIT();		
+        return;		
+    }		
+    			
+   
+
+    
+    OS_CRITICAL_ENTER();
+    
+//    AVL_NAME(remove)(Rec_Task_Tree, p_tcb);
+    OSRecPeriod[i]=p_tcb;
+    OS_CRITICAL_EXIT_NO_SCHED();
+//    AVL_NAME(insert)(Rec_Task_Tree, p_tcb->Period+OSTickCtr, p_tcb);		
+    tick_cnt++;		
+  }
+    }
+    		
+    OSSched();	
+	
+}		
 
 
 /*
@@ -70,9 +180,12 @@ void  OS_TickTask (void *p_arg)
                             (OS_OPT   )OS_OPT_PEND_BLOCKING,
                             (CPU_TS  *)&ts,
                             (OS_ERR  *)&err);               /* Wait for signal from tick interrupt                    */
-        if (err == OS_ERR_NONE) {
-            if (OSRunning == OS_STATE_OS_RUNNING) {
-                OS_TickListUpdate();                        /* Update all tasks waiting for time                      */
+//           ts_start = OS_TS_GET();
+         if (err == OS_ERR_NONE) {		
+            if (OSRunning == OS_STATE_OS_RUNNING) {		
+//         ts_end1 = OS_TS_GET() - ts_start;		
+		OS_revive_rec_task();  // insertion of the tasks into the ready list
+                OS_TickListUpdate();                        /* Update all tasks waiting for time                      */ 
             }
         }
     }

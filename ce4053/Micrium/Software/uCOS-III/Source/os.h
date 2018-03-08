@@ -55,7 +55,7 @@ extern "C" {
 #endif
 
 
-
+#include <avl.c>
 #include <os_cfg.h>
 #include <cpu.h>
 #include <cpu_core.h>
@@ -630,9 +630,19 @@ typedef  struct  os_q                OS_Q;
 
 typedef  struct  os_sem              OS_SEM;
 
-
 typedef  void                      (*OS_TASK_PTR)(void *p_arg);
-typedef  void                      (*OS_TASK_CALLBACK)(void *p_arg);    //      added
+
+//typedef struct OS_AVL_Node           OS_AVL_Node;
+//
+//struct OS_AVL_Node
+//{
+//    OS_PERIOD period;
+//    OS_PERIOD time_to_revive;
+//    OS_TCB*      p_tcb;
+//    OS_AVL_Node*  AVL_node_left;
+//    OS_AVL_Node*  AVL_node_right;
+//    CPU_INT08U      height;
+//};
 
 typedef  struct  os_tcb              OS_TCB;
 
@@ -1103,7 +1113,8 @@ OS_EXT            OS_PRIO                OSPrioCur;                   /* Priorit
 OS_EXT            OS_PRIO                OSPrioHighRdy;               /* Priority of highest priority task            */
 OS_EXT            OS_PRIO                OSPrioSaved;                 /* Saved priority level when Post Deferred      */
 extern            CPU_DATA               OSPrioTbl[OS_PRIO_TBL_SIZE];
-
+//extern            OS_AVL_Node                *OS_PrioAVL_root;
+OS_EXT            OS_TCB*                OSRecPeriod[128];
                                                                       /* QUEUES ------------------------------------- */
 #if OS_CFG_Q_EN   > 0u
 #if OS_CFG_DBG_EN > 0u
@@ -1273,6 +1284,21 @@ extern  OS_TMR_SPOKE   OSCfg_TmrWheel[];
 ************************************************************************************************************************
 ************************************************************************************************************************
 */
+/*                                                      Recursion                                       */
+//OS_AVL_Node*  OS_AVLInsert (OS_AVL_Node *T, OS_PRIO  prio);
+//
+//OS_AVL_Node*  OS_AVLRemove (OS_AVL_Node *T, OS_PRIO  prio);
+//
+//OS_PRIO         OS_AVLGetMin       (OS_AVL_Node* t);
+//CPU_INT08U OS_AVL_height(OS_AVL_Node *T);
+//OS_AVL_Node *OS_AVL_rotateright(OS_AVL_Node *x);
+//OS_AVL_Node *OS_AVL_rotateleft(OS_AVL_Node *x);
+//OS_AVL_Node *OS_AVL_RR(OS_AVL_Node *T);
+//OS_AVL_Node *OS_AVL_LL(OS_AVL_Node *T);
+//OS_AVL_Node *OS_AVL_LR(OS_AVL_Node *T);
+//OS_AVL_Node *OS_AVL_RL(OS_AVL_Node *T);
+///* Balance Factor */
+//CPU_INT08U OS_AVL_BF(OS_AVL_Node *T);
 
 /* ================================================================================================================== */
 /*                                                    EVENT FLAGS                                                     */

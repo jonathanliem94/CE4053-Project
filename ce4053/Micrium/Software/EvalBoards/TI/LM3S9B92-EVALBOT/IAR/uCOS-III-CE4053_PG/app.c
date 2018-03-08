@@ -183,7 +183,6 @@ static  void  AppTaskStart (void  *p_arg)
   OS_CPU_SysTickInit(cnts);                                   /* Init uC/OS periodic time src (SysTick).              */
   CPU_TS_TmrFreqSet(clk_freq);
   
-  
   /* Enable Wheel ISR Interrupt */
   AppRobotMotorDriveSensorEnable();
   
@@ -194,7 +193,7 @@ static  void  AppTaskStart (void  *p_arg)
                (OS_TASK_PTR ) LEDBlink, 
                (void       *) 0, 
                (OS_PRIO     ) LED_BLINK_PRIO, 
-               (OS_PERIOD   ) 5u,
+               (OS_PERIOD   ) 5000u,
                (CPU_STK    *)&LEDBlinkStk[0], 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE / 10u, 
                (CPU_STK_SIZE) LED_BLINK_STK_SIZE, 
@@ -288,7 +287,7 @@ static  void  LEDBlink (void  *p_arg)
   BSP_LED_Off(0u);
   //    turn off again
 /* Delete this task */
-  
+  OSRecTaskDelete((OS_TCB *)0, &err);
             
 }
 
@@ -305,7 +304,7 @@ static  void  moveForward (void  *p_arg)
     }
   }
 /* Delete this task */
-  OSTaskDel((OS_TCB *)0, &err);
+  OSRecTaskDelete((OS_TCB *)0, &err);
 }
 
 
@@ -322,7 +321,7 @@ static  void moveBackward (void *p_arg)
     }
   }
 /* Delete this task */
-  OSTaskDel((OS_TCB *)0, &err);
+  OSRecTaskDelete((OS_TCB *)0, &err);
   
 }
 
@@ -339,7 +338,7 @@ static  void leftTurn (void *p_arg)
     }
   }
 /* Delete this task */
-  OSTaskDel((OS_TCB *)0, &err);
+  OSRecTaskDelete((OS_TCB *)0, &err);
   
 }
 
@@ -356,7 +355,7 @@ static  void rightTurn (void *p_arg)
     }
   }
 /* Delete this task */
-  OSTaskDel((OS_TCB *)0, &err);
+  OSRecTaskDelete((OS_TCB *)0, &err);
   
 }
 
