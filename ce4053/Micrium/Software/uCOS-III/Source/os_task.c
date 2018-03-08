@@ -240,8 +240,6 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
                     CPU_CHAR      *p_name,
                     OS_TASK_PTR    p_task,
                     void          *p_arg,
-                    OS_TASK_CALLBACK    p_callback,     //      added new callback function for use in its own timer
-                    void          *p_arg_callback,               //      callback function's argument
                     OS_PRIO        prio,
                     OS_PERIOD      period,
                     CPU_STK       *p_stk_base,
@@ -407,23 +405,13 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
         return;
     }
 
+    
+    //////////////////////////////////////////  implement periodicity here      //////////////////////////////////////////
+
+    
     OS_CRITICAL_EXIT_NO_SCHED();
 
     OSSched();
-    
-    //////////////////////////////////////////  implement periodicity here      //////////////////////////////////////////
-    OS_ERR      err;
-    OS_TMR TMR;
-    OSTmrCreate ((OS_TMR                *)&TMR,
-                 (CPU_CHAR              *)"TIMER",
-                 (OS_TICK                )period,          // for one shot mode
-                 (OS_TICK                )0,       // for periodic mode
-                 (OS_OPT                 )OS_OPT_TMR_ONE_SHOT,  // should be one shot mode else will have nested periodic
-                 (OS_TMR_CALLBACK_PTR    )p_callback,   // callback function to create/delete the task again
-                 (void                  *)0,
-                 (OS_ERR                *)&err);
-    OSTmrStart ((OS_TMR *)&TMR,
-                (OS_ERR *)&err);
     
 }
 //////////////////////////////////////////      END of OSTaskCreate     /////////////////////////////////////////////////////////////////
@@ -1939,12 +1927,7 @@ void  OS_TaskInitTCB (OS_TCB *p_tcb)
 
     p_tcb->TaskEntryAddr      = (OS_TASK_PTR    )0;
     p_tcb->TaskEntryArg       = (void          *)0;
-
-    /*  following just added for callback function in OSTaskCreate
-    */
-    p_tcb->CallbackTaskEntryAddr      = (OS_TASK_CALLBACK    )0;
-    p_tcb->CallbackTaskEntryArg       = (void          *)0;
-    
+    p_tcb->Period             = (OS_PERIOD      )0;
     
     
 #if (OS_CFG_PEND_MULTI_EN > 0u)

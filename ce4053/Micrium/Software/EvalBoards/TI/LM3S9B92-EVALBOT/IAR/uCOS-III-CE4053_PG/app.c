@@ -76,9 +76,6 @@ static  CPU_STK      AppTaskStartStk[APP_TASK_START_STK_SIZE];
 static  OS_TCB       LEDBlinkTCB;
 static  CPU_STK      LEDBlinkStk[LED_BLINK_STK_SIZE];
 
-static  OS_TCB       JobLEDBlinkTCB;
-static  CPU_STK      JobLEDBlinkStk[JOB_LED_BLINK_STK_SIZE];
-
 static  OS_TCB       moveForwardTCB;
 static  CPU_STK      moveForwardStk[MOV_FORWARD_STK_SIZE];
 
@@ -98,8 +95,6 @@ CPU_INT32U      iToken  = 0;
 CPU_INT32U      iCounter= 1;
 CPU_INT32U      iMove   = 10;
 CPU_INT32U      measure=0;
-//OS_TMR LEDTmr;
-OS_FLAG_GRP event_flag; //     R | L | Bac | Fwd | LED --> last 5 bits (LED is LSB) 
 
 
 /*
@@ -114,13 +109,10 @@ void        RoboTurn                          (tSide dir, CPU_INT16U seg, CPU_IN
 
 static  void        AppTaskStart                 (void  *p_arg);
 static  void        LEDBlink                   (void  *p_arg);
-static  void        CallBack                   (void  *p_arg);  //      just added for callback function in OSTaskCreate
 static  void        moveForward                   (void  *p_arg);
 static  void        moveBackward                   (void  *p_arg);
 static  void        leftTurn                   (void  *p_arg);
 static  void        rightTurn                   (void  *p_arg);
-static  void        callbackLEDBlink            (void  *p_arg);
-static  void        JobLEDBlink                 (void  *p_arg);
 
 /*
 *********************************************************************************************************
@@ -142,17 +134,11 @@ int  main (void)
   BSP_IntDisAll();                                            /* Disable all interrupts.                              */
   OSInit(&err);                                               /* Init uC/OS-III.                                      */
   
-  OSFlagCreate((OS_FLAG_GRP  *)&event_flag,
-               (CPU_CHAR     *)"Event Flag",
-               (OS_FLAGS      )0,
-               (OS_ERR       *)&err);
   
   OSTaskCreate((OS_TCB     *)&AppTaskStartTCB,           /* Create the start task                                */
                (CPU_CHAR   *)"App Task Start",
                (OS_TASK_PTR ) AppTaskStart,
                (void       *) 0,
-               (OS_TASK_CALLBACK)    0,     //      added new callback function for use in its own timer
-               (void       *) 0,               //      callback function's argument
                (OS_PRIO     ) APP_TASK_START_PRIO,
                (OS_PERIOD   ) 0u,
                (CPU_STK    *)&AppTaskStartStk[0],
@@ -207,8 +193,6 @@ static  void  AppTaskStart (void  *p_arg)
                (CPU_CHAR   *)"LED Blink", 
                (OS_TASK_PTR ) LEDBlink, 
                (void       *) 0, 
-               (OS_TASK_CALLBACK) CallBack,     //      added new callback function for use in its own timer
-               (void       *) 0,               //      callback function's argument
                (OS_PRIO     ) LED_BLINK_PRIO, 
                (OS_PERIOD   ) 5u,
                (CPU_STK    *)&LEDBlinkStk[0], 
@@ -287,58 +271,7 @@ static  void  AppTaskStart (void  *p_arg)
   OSTaskDel((OS_TCB *)0, &err); //      this deletes the AppTaskStart, leaving the above 5 tasks in the queue
   
 }
-//////////////////////////////////////////      this is old code        ////////////////////////////////////////////////////////////////////
-//static  void  LEDBlink (void  *p_arg)
-//{   
-//  OS_ERR      err;
-//  OS_FLAGS event_flag;
-//  OSTmrCreate ((OS_TMR          *)&LEDTmr,
-//               (CPU_CHAR        *)"LED Timer",
-//               (OS_TICK          )0, //one shot mode
-//               (OS_TICK          )5000,//period
-//               (OS_OPT           )OS_OPT_TMR_PERIODIC,
-//               (OS_TMR_CALLBACK_PTR)callbackLEDBlink,
-//               (void *)0,
-//               (OS_ERR *)&err);
-//  OSTmrStart ((OS_TMR *)&LEDTmr,
-//              (OS_ERR *)&err);
-//  
-//  while (1)
-//  {
-//    OSFlagPend ((OS_FLAG_GRP  *)&event_flag,
-//                (OS_FLAGS      )LED_BLINK_Proc,
-//                (OS_TICK       )0,
-//                (OS_OPT        )(OS_OPT_PEND_FLAG_SET_ALL+OS_OPT_PEND_FLAG_CONSUME),
-//                (CPU_TS       *)0,
-//                (OS_ERR       *)err);
-//      //      FLAG = FLAG & !LED_BLINK_Proc;  // problematic dk why
-//      OSTaskCreate((OS_TCB     *)&JobLEDBlinkTCB, 
-//                   (CPU_CHAR   *)"Job LED Blink", 
-//                   (OS_TASK_PTR ) JobLEDBlink, 
-//                   (void       *) 0, 
-//                   (OS_PRIO     ) JobLED_BLINK_PRIO, 
-//                   (CPU_STK    *)&JobLEDBlinkStk[0], 
-//                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE / 10u, 
-//                   (CPU_STK_SIZE) JOB_LED_BLINK_STK_SIZE, 
-//                   (OS_MSG_QTY  ) 0u, 
-//                   (OS_TICK     ) 0u, 
-//                   (void       *)(CPU_INT32U) 1, 
-//                   (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//                   (OS_ERR     *)&err);
-//  }
-//}
-//
-//static  void  callbackLEDBlink (void  *p_arg)
-//{   
-//  OS_ERR err;
-//  OS_FLAGS event_flag;
-//  //set flag
-//  event_flag=OSFlagPost((OS_FLAG_GRP  *)&event_flag,
-//                        (OS_FLAGS      )LED_BLINK_Proc,
-//                        (OS_OPT      )OS_OPT_POST_FLAG_SET,
-//                        (OS_ERR       *)&err);
-//}
-/////////////////////////////////////////      end of old code        /////////////////////////////////////////////////////////////////////
+
 static  void  LEDBlink (void  *p_arg)
 {   
   OS_ERR      err;
@@ -359,29 +292,6 @@ static  void  LEDBlink (void  *p_arg)
             
 }
 
-static  void  CallBack (void  *p_arg)   //      not sure if we should pass in tcb or can do without doing so
-{
-  OS_ERR      err;
-  OSTaskDel((OS_TCB *)0, &err);
-  //    somehow need to create task based on argument we pass in --> so we can use this function for anything
-  //    for now, we test with one task --> LED Blinking
-  OSTaskCreate((OS_TCB     *)           &LEDBlinkTCB, 
-               (CPU_CHAR   *)           "LED Blink", 
-               (OS_TASK_PTR )           LEDBlink, 
-               (void       *)           0, 
-               (OS_TASK_CALLBACK)       CallBack,     //      added new callback function for use in its own timer
-               (void       *)           0,               //      callback function's argument --> maybe we pass in TCB name?
-               (OS_PRIO     )           LED_BLINK_PRIO, 
-               (OS_PERIOD   )           5u,
-               (CPU_STK    *)           &LEDBlinkStk[0], 
-               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE / 10u, 
-               (CPU_STK_SIZE)           LED_BLINK_STK_SIZE, 
-               (OS_MSG_QTY  )           0u, 
-               (OS_TICK     )           0u, 
-               (void       *)           (CPU_INT32U) 1, 
-               (OS_OPT      )           (OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-               (OS_ERR     *)           &err);
-}
 static  void  moveForward (void  *p_arg)
 { 
   OS_ERR      err;

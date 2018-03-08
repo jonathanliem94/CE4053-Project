@@ -897,9 +897,6 @@ struct os_tcb {
 
     OS_TASK_PTR          TaskEntryAddr;                     /* Pointer to task entry point address                    */
     void                *TaskEntryArg;                      /* Argument passed to task when it was created            */
-    
-    OS_TASK_CALLBACK     CallbackTaskEntryAddr;                     /* Pointer to task entry point address                    */
-    void                *CallbackTaskEntryArg;                      /* Argument passed to task when it was created            */
 
     OS_PEND_DATA        *PendDataTblPtr;                    /* Pointer to list containing objects pended on           */
     OS_STATE             PendOn;                            /* Indicates what task is pending on                      */
@@ -1579,8 +1576,6 @@ void          OSTaskCreate              (OS_TCB                *p_tcb,
                                          CPU_CHAR              *p_name,
                                          OS_TASK_PTR            p_task,
                                          void                  *p_arg,
-                                         OS_TASK_CALLBACK       p_callback,
-                                         void                  *p_arg_callback,
                                          OS_PRIO                prio,
                                          OS_PERIOD              period,
                                          CPU_STK               *p_stk_base,
