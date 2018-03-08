@@ -49,9 +49,11 @@ void OS_revive_rec_task(void)
   //    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
 //  for(int i = 0; i<128; i++)
 //  {
-    if ((OSRecPeriod[0]->Period)==OSTickCtr)
+  int   p; 
+for (p = 0; p <= 0; p++) {
+    if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
     {				
-      p_tcb = OSRecPeriod[0];
+      p_tcb = OSRecPeriod[p];
       CPU_STK_SIZE   j; 		
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
       OS_OBJ_QTY     reg_nbr; 		
@@ -142,9 +144,10 @@ void OS_revive_rec_task(void)
       //    AVL_NAME(insert)(Rec_Task_Tree, p_tcb->Period+OSTickCtr, p_tcb);		
       tick_cnt++;		
     }
-//  }
+    OSSched();	
+  }
   
-  OSSched();	
+  
 	
 }		
 

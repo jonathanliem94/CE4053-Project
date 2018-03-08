@@ -34,7 +34,7 @@
 
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_task__c = "$Id: $";
-
+count = 0;
 #endif
 
 /*
@@ -555,7 +555,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
 //    heap_push(&h,&TASK[h.count]);
 //    AVL_NAME(insert)(Rec_Task_Tree, period+OSTickCtr, p_tcb);
 //    OSRecPeriod[period%1000]=p_tcb;
-    OSRecPeriod[0]=p_tcb;
+    OSRecPeriod[count]=p_tcb;
+    count += 1;
   }
   
   else		

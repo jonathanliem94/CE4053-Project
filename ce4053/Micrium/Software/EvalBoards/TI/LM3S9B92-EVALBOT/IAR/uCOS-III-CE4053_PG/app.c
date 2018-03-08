@@ -208,7 +208,7 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_TASK_PTR ) moveForward, 
 //               (void       *) 0, 
 //               (OS_PRIO     ) MOV_FORWARD_PRIO,  
-//               (OS_PERIOD   ) 10u,
+//               (OS_PERIOD   ) 10000u,
 //               (CPU_STK    *)&moveForwardStk[0], 
 //               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
 //               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
@@ -235,20 +235,20 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
-//  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
-//               (CPU_CHAR   *)"Left Turn", 
-//               (OS_TASK_PTR ) leftTurn, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) LEFT_TURN_PRIO,  
-//               (OS_PERIOD   ) 25u,
-//               (CPU_STK    *)&leftTurnStk[0], 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 4, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
+               (CPU_CHAR   *)"Left Turn", 
+               (OS_TASK_PTR ) leftTurn, 
+               (void       *) 0, 
+               (OS_PRIO     ) LEFT_TURN_PRIO,  
+               (OS_PERIOD   ) 10000u,
+               (CPU_STK    *)&leftTurnStk[0], 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 4, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
 //  OSRecTaskCreate((OS_TCB     *)&rightTurnTCB, 
