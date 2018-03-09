@@ -524,7 +524,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */		
     p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */		
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */		
-    p_tcb->Prio          = ((period/1000)+3);                            /* Save the task's priority                               */		
+    p_tcb->Prio          = prio;                            /* Save the task's priority                               */		
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
     p_tcb->Period        = period;
@@ -564,7 +564,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        (CPU_CHAR      *)p_name,
                        (OS_TASK_PTR    )p_task,
                        (void          *)p_arg,
-                       (OS_PRIO        )((period/1000)+3),
+                       (OS_PRIO        )prio,
                        (OS_PERIOD      )period,
                        (CPU_STK       *)p_stk_base,
                        (CPU_STK_SIZE   )stk_limit,

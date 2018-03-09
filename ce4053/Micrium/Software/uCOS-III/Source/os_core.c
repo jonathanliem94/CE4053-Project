@@ -358,6 +358,10 @@ void  OSSafetyCriticalStart (void)
 
 void  OSSched (void)
 {
+    OS_TCB* current;
+    OS_ERR* p_err;
+    int i = 3;
+    int new_priority;
     CPU_SR_ALLOC();
 
 
@@ -368,12 +372,26 @@ void  OSSched (void)
     if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {        /* Scheduler locked?                                      */
         return;                                             /* Yes                                                    */
     }
-
+    
+    current = OSRdyList[i].HeadPtr;
     CPU_INT_DIS();
-    //      int new_priority = ((p_tcb->Deadline-OSTickCtr)%1000)+3;
-//        OSTaskChangePrio ((OS_TCB   *)p_tcb,
-//                          (OS_PRIO   )new_priority,
-//                          (OS_ERR   *)p_err);
+    while (i<=OS_PRIO_TBL_SIZE)
+    {
+      while (current != 0)
+      {
+        while (current->NextPtr != 0)
+        {
+          new_priority = ((current->Deadline-OSTickCtr)/1000)+3;
+          OSTaskChangePrio ((OS_TCB   *)current,
+                            (OS_PRIO   )new_priority,
+                            (OS_ERR   *)p_err);
+        }
+        current= current->NextPtr;
+      }
+      i++;
+      current = OSRdyList[i].HeadPtr;
+    }
+      
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
