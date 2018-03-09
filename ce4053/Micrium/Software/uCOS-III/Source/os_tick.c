@@ -151,7 +151,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       OS_CRITICAL_EXIT_NO_SCHED();	
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
 //      
-//      int new_priority = ((p_tcb->Deadline-OSTickCtr)%1000)+3;
+//      int new_priority = ((p_tcb->Deadline-OSTickCtr)/1000)+3;
 //        OSTaskChangePrio ((OS_TCB   *)p_tcb,
 //                          (OS_PRIO   )new_priority,
 //                          (OS_ERR   *)p_err);
