@@ -1116,7 +1116,9 @@ OS_EXT            OS_PRIO                OSPrioSaved;                 /* Saved p
 extern            CPU_DATA               OSPrioTbl[OS_PRIO_TBL_SIZE];
 //extern            OS_AVL_Node                *OS_PrioAVL_root;
 OS_EXT            OS_TCB*                OSRecPeriod[128];
-static CPU_INT16U count;
+OS_EXT CPU_INT16U taskCnt;
+OS_EXT CPU_INT16U testCnt;
+static int   q = 0;
                                                                       /* QUEUES ------------------------------------- */
 #if OS_CFG_Q_EN   > 0u
 #if OS_CFG_DBG_EN > 0u

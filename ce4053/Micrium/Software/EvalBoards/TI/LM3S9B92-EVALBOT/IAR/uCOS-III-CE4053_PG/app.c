@@ -203,52 +203,52 @@ static  void  AppTaskStart (void  *p_arg)
                (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                (OS_ERR     *)&err);
 //////////////////////////////////      create Move Forward Task   //////////////////////////////////////////  
-//  OSRecTaskCreate((OS_TCB     *)&moveForwardTCB, 
-//               (CPU_CHAR   *)"Move Forwards", 
-//               (OS_TASK_PTR ) moveForward, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) MOV_FORWARD_PRIO,  
-//               (OS_PERIOD   ) 10000u,
-//               (CPU_STK    *)&moveForwardStk[0], 
-//               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 2, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
-  
-//////////////////////////////////      create Move Backward Task   //////////////////////////////////////////  
-//  OSRecTaskCreate((OS_TCB     *)&moveBackwardTCB, 
-//               (CPU_CHAR   *)"Move Backwards", 
-//               (OS_TASK_PTR ) moveBackward, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) MOV_BACKWARD_PRIO,  
-//               (OS_PERIOD   ) 17u,
-//               (CPU_STK    *)&moveBackwardStk[0], 
-//               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 3, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
-
-//////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
-  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
-               (CPU_CHAR   *)"Left Turn", 
-               (OS_TASK_PTR ) leftTurn, 
+  OSRecTaskCreate((OS_TCB     *)&moveForwardTCB, 
+               (CPU_CHAR   *)"Move Forwards", 
+               (OS_TASK_PTR ) moveForward, 
                (void       *) 0, 
-               (OS_PRIO     ) LEFT_TURN_PRIO,  
+               (OS_PRIO     ) MOV_FORWARD_PRIO,  
                (OS_PERIOD   ) 10000u,
-               (CPU_STK    *)&leftTurnStk[0], 
-               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
-               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+               (CPU_STK    *)&moveForwardStk[0], 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_FORWARD_STK_SIZE, 
                (OS_MSG_QTY  ) 0u, 
                (OS_TICK     ) 0u, 
-               (void       *) (CPU_INT32U) 4, 
+               (void       *) (CPU_INT32U) 2, 
                (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                (OS_ERR     *)&err);
+  
+//////////////////////////////////      create Move Backward Task   //////////////////////////////////////////  
+  OSRecTaskCreate((OS_TCB     *)&moveBackwardTCB, 
+               (CPU_CHAR   *)"Move Backwards", 
+               (OS_TASK_PTR ) moveBackward, 
+               (void       *) 0, 
+               (OS_PRIO     ) MOV_BACKWARD_PRIO,  
+               (OS_PERIOD   ) 17000u,
+               (CPU_STK    *)&moveBackwardStk[0], 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) MOV_BACKWARD_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 3, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
+
+//////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
+//  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
+//               (CPU_CHAR   *)"Left Turn", 
+//               (OS_TASK_PTR ) leftTurn, 
+//               (void       *) 0, 
+//               (OS_PRIO     ) LEFT_TURN_PRIO,  
+//               (OS_PERIOD   ) 25000u,
+//               (CPU_STK    *)&leftTurnStk[0], 
+//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+//               (OS_MSG_QTY  ) 0u, 
+//               (OS_TICK     ) 0u, 
+//               (void       *) (CPU_INT32U) 4, 
+//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+//               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
 //  OSRecTaskCreate((OS_TCB     *)&rightTurnTCB, 
@@ -256,7 +256,7 @@ static  void  AppTaskStart (void  *p_arg)
 //               (OS_TASK_PTR ) rightTurn, 
 //               (void       *) 0, 
 //               (OS_PRIO     ) RIGHT_TURN_PRIO,  
-//               (OS_PERIOD   ) 47u,
+//               (OS_PERIOD   ) 47000u,
 //               (CPU_STK    *)&rightTurnStk[0], 
 //               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
 //               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
@@ -280,7 +280,7 @@ static  void  LEDBlink (void  *p_arg)
   for(k=0; k<10; k++)   
   {
     BSP_LED_Toggle(0u);
-    for(i=0; i <ONESECONDTICK/4; i++)
+    for(i=0; i <ONESECONDTICK/16; i++)
       j = ((i * 2)+j);
   }
   

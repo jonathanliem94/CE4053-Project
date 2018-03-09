@@ -42,17 +42,18 @@ CPU_INT16U tick_cnt = 0;
 ************************************************************************************************************************
 */
 
-void OS_revive_rec_task(void)		
+void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
   
   OS_TCB *p_tcb;	
   //    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
-//  for(int i = 0; i<128; i++)
-//  {
-  int   p; 
-for (p = 0; p <= 0; p++) {
+  //  for(int i = 0; i<128; i++)
+  //  {
+  CPU_INT16U   p; 
+  
+  for (p = 0; p <=taskCnt-1 ; p++) {
     if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
-    {				
+    {		
       p_tcb = OSRecPeriod[p];
       CPU_STK_SIZE   j; 		
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
@@ -75,7 +76,8 @@ for (p = 0; p <= 0; p++) {
                            p_tcb->StkLimitPtr, 		
                            p_tcb->StkSize, 		
                            p_tcb->Opt); 		
-      p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */ 		
+      p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */ 	
+      p_tcb->Deadline      =    p_tcb->Period+OSTickCtr;        //      need to update the corresponding deadline for each recursive task
       
 #if 0 		
       /* -------------- INITIALIZE THE TCB FIELDS ------------- */ 		
@@ -139,16 +141,13 @@ for (p = 0; p <= 0; p++) {
       
       OS_CRITICAL_ENTER();
       //    AVL_NAME(remove)(Rec_Task_Tree, p_tcb);
-      OSRecPeriod[0]=p_tcb;
+      OSRecPeriod[p]=p_tcb;
       OS_CRITICAL_EXIT_NO_SCHED();
       //    AVL_NAME(insert)(Rec_Task_Tree, p_tcb->Period+OSTickCtr, p_tcb);		
-      tick_cnt++;		
+      tick_cnt++;
     }
-    OSSched();	
   }
-  
-  
-	
+  OSSched();	
 }		
 
 

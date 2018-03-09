@@ -34,7 +34,7 @@
 
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_task__c = "$Id: $";
-count = 0;
+taskCnt = 0; testCnt = 0;
 #endif
 
 /*
@@ -555,8 +555,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
 //    heap_push(&h,&TASK[h.count]);
 //    AVL_NAME(insert)(Rec_Task_Tree, period+OSTickCtr, p_tcb);
 //    OSRecPeriod[period%1000]=p_tcb;
-    OSRecPeriod[count]=p_tcb;
-    count += 1;
+    OSRecPeriod[taskCnt]=p_tcb;
+    taskCnt += 1;
   }
   
   else		
@@ -709,6 +709,7 @@ void  OSTaskDel (OS_TCB  *p_tcb,
 void  OSRecTaskDelete (OS_TCB  *p_tcb,
                  OS_ERR  *p_err)
 {
+  testCnt +=  1;
     CPU_SR_ALLOC();
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {
