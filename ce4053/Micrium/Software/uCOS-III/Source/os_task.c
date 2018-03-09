@@ -31,7 +31,9 @@
 */
 
 #include <os.h>
-
+#include <heap.h>
+struct heap OS_REC_HEAP;		
+struct node REC_TASK_ARR[5];
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_task__c = "$Id: $";
 taskCnt = 0; testCnt = 0;
@@ -548,19 +550,16 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     OS_MsgQInit(&p_tcb->MsgQ,                               /* Initialize the task's message queue                    */		
                 q_size);		
 #endif		
-    
-//    TASK[h.count].period = data;
-//    TASK[h.count].data = data;
-//    TASK[h.count].p_tcb = p_tcb;
-//    heap_push(&h,&TASK[h.count]);
-//    AVL_NAME(insert)(Rec_Task_Tree, period+OSTickCtr, p_tcb);
-//    OSRecPeriod[period%1000]=p_tcb;
-    OSRecPeriod[taskCnt]=p_tcb;
-    taskCnt += 1;
+    REC_TASK_ARR[OS_REC_HEAP.count].period = p_tcb->Period;
+    REC_TASK_ARR[OS_REC_HEAP.count].deadline = p_tcb->Deadline;
+    REC_TASK_ARR[OS_REC_HEAP.count].p_tcb = p_tcb;
+    heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
+
+   
+//    OSRecPeriod[taskCnt]=p_tcb;
+//    taskCnt += 1;
   }
-  
-  else		
-  {		
+	
     OSTaskCreate((OS_TCB        *)p_tcb,
                        (CPU_CHAR      *)p_name,
                        (OS_TASK_PTR    )p_task,
@@ -575,7 +574,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        (void          *)p_ext,
                        (OS_OPT         )opt,
                        (OS_ERR        *)p_err);		
-  }		
+		
 }
 
 

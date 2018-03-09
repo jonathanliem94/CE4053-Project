@@ -55,7 +55,6 @@ extern "C" {
 #endif
 
 
-#include <avl.c>
 #include <os_cfg.h>
 #include <cpu.h>
 #include <cpu_core.h>
@@ -631,6 +630,8 @@ typedef  struct  os_q                OS_Q;
 typedef  struct  os_sem              OS_SEM;
 
 typedef  void                      (*OS_TASK_PTR)(void *p_arg);
+
+typedef struct node node;
 
 //typedef struct OS_AVL_Node           OS_AVL_Node;
 //

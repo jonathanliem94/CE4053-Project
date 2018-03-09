@@ -235,36 +235,36 @@ static  void  AppTaskStart (void  *p_arg)
                (OS_ERR     *)&err);
 
 //////////////////////////////////      create Left Turn Task   //////////////////////////////////////////  
-//  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
-//               (CPU_CHAR   *)"Left Turn", 
-//               (OS_TASK_PTR ) leftTurn, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) LEFT_TURN_PRIO,  
-//               (OS_PERIOD   ) 25000u,
-//               (CPU_STK    *)&leftTurnStk[0], 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 4, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+  OSRecTaskCreate((OS_TCB     *)&leftTurnTCB, 
+               (CPU_CHAR   *)"Left Turn", 
+               (OS_TASK_PTR ) leftTurn, 
+               (void       *) 0, 
+               (OS_PRIO     ) LEFT_TURN_PRIO,  
+               (OS_PERIOD   ) 25000u,
+               (CPU_STK    *)&leftTurnStk[0], 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) LEFT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 4, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
 
 //////////////////////////////////      create Right Turn Task   //////////////////////////////////////////  
-//  OSRecTaskCreate((OS_TCB     *)&rightTurnTCB, 
-//               (CPU_CHAR   *)"Right Turn", 
-//               (OS_TASK_PTR ) rightTurn, 
-//               (void       *) 0, 
-//               (OS_PRIO     ) RIGHT_TURN_PRIO,  
-//               (OS_PERIOD   ) 47000u,
-//               (CPU_STK    *)&rightTurnStk[0], 
-//               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
-//               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
-//               (OS_MSG_QTY  ) 0u, 
-//               (OS_TICK     ) 0u, 
-//               (void       *) (CPU_INT32U) 5, 
-//               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
-//               (OS_ERR     *)&err);
+  OSRecTaskCreate((OS_TCB     *)&rightTurnTCB, 
+               (CPU_CHAR   *)"Right Turn", 
+               (OS_TASK_PTR ) rightTurn, 
+               (void       *) 0, 
+               (OS_PRIO     ) RIGHT_TURN_PRIO,  
+               (OS_PERIOD   ) 47000u,
+               (CPU_STK    *)&rightTurnStk[0], 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE / 10u, 
+               (CPU_STK_SIZE) RIGHT_TURN_STK_SIZE, 
+               (OS_MSG_QTY  ) 0u, 
+               (OS_TICK     ) 0u, 
+               (void       *) (CPU_INT32U) 5, 
+               (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
+               (OS_ERR     *)&err);
   
   /* Delete this task */
   OSTaskDel((OS_TCB *)0, &err); //      this deletes the AppTaskStart, leaving the above 5 tasks in the queue

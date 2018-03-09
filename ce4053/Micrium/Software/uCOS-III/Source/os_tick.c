@@ -31,11 +31,13 @@
 */
 
 #include <os.h>
-
+#include <heap.h>
+extern struct heap OS_REC_HEAP;
+struct node new_nodeArr[100];
+CPU_INT16U count = 0;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_tick__c = "$Id: $";
 #endif
-CPU_INT16U tick_cnt = 0;
 /*
 ************************************************************************************************************************
 *                                                  LOCAL PROTOTYPES
@@ -51,10 +53,11 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   //  {
   CPU_INT16U   p; 
   
-  for (p = 0; p <=taskCnt-1 ; p++) {
-    if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
+//  for (p = 0; p <=taskCnt-1 ; p++) {
+//    if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
+  while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)
     {		
-      p_tcb = OSRecPeriod[p];
+      p_tcb = OS_REC_HEAP.node_arr[0]->p_tcb;
       CPU_STK_SIZE   j; 		
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
       OS_OBJ_QTY     reg_nbr; 		
@@ -138,15 +141,18 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
         OS_CRITICAL_EXIT();		
         return;		
       }		
-      
+      count=count%100;
+      new_nodeArr[count].deadline = p_tcb->Deadline;
+      new_nodeArr[count].period = p_tcb->Period;
+      new_nodeArr[count].p_tcb = p_tcb;
       OS_CRITICAL_ENTER();
-      //    AVL_NAME(remove)(Rec_Task_Tree, p_tcb);
-      OSRecPeriod[p]=p_tcb;
-      OS_CRITICAL_EXIT_NO_SCHED();
-      //    AVL_NAME(insert)(Rec_Task_Tree, p_tcb->Period+OSTickCtr, p_tcb);		
-      tick_cnt++;
+//      OSRecPeriod[p]=p_tcb;
+      heap_pop(&OS_REC_HEAP);
+      OS_CRITICAL_EXIT_NO_SCHED();	
+      heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
+      count++;
     }
-  }
+  
   OSSched();	
 }		
 

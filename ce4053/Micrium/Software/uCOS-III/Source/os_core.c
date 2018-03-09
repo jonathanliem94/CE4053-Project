@@ -31,7 +31,7 @@
 */
 
 #include  <os.h>
-
+#include  <heap.h>
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_core__c = "$Id: $";
 #endif
@@ -55,7 +55,8 @@ void  OSInit (OS_ERR  *p_err)
 {
     CPU_STK      *p_stk;
     CPU_STK_SIZE  size;
-
+    struct heap h;		
+    heap_init(&h);
 
 
 #ifdef OS_SAFETY_CRITICAL
