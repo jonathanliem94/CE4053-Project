@@ -361,7 +361,6 @@ void  OSSched (void)
     CPU_SR_ALLOC();
 
 
-
     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* ISRs still nested?                                     */
         return;                                             /* Yes ... only schedule when no nested ISRs              */
     }
@@ -371,6 +370,10 @@ void  OSSched (void)
     }
 
     CPU_INT_DIS();
+    //      int new_priority = ((p_tcb->Deadline-OSTickCtr)%1000)+3;
+//        OSTaskChangePrio ((OS_TCB   *)p_tcb,
+//                          (OS_PRIO   )new_priority,
+//                          (OS_ERR   *)p_err);
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */

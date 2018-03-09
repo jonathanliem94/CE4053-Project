@@ -52,7 +52,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   //  for(int i = 0; i<128; i++)
   //  {
   CPU_INT16U   p; 
-  
+  OS_ERR *p_err;
 //  for (p = 0; p <=taskCnt-1 ; p++) {
 //    if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
   while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)
@@ -150,6 +150,12 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       heap_pop(&OS_REC_HEAP);
       OS_CRITICAL_EXIT_NO_SCHED();	
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
+//      
+//      int new_priority = ((p_tcb->Deadline-OSTickCtr)%1000)+3;
+//        OSTaskChangePrio ((OS_TCB   *)p_tcb,
+//                          (OS_PRIO   )new_priority,
+//                          (OS_ERR   *)p_err);
+       
       count++;
     }
   
