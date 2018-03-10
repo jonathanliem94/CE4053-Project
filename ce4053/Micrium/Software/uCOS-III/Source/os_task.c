@@ -253,7 +253,9 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
                     void          *p_ext,
                     OS_OPT         opt,
                     OS_ERR        *p_err)
-{
+{   
+ 
+  
     CPU_STK_SIZE   i;
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u
     OS_OBJ_QTY     reg_nbr;
@@ -261,6 +263,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     CPU_STK       *p_sp;
     CPU_STK       *p_stk_limit;
     CPU_SR_ALLOC();
+
 
 
 
@@ -411,7 +414,7 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     OS_CRITICAL_EXIT_NO_SCHED();
 
     OSSched();
-    
+
 }
 
 void  OSRecTaskCreate (OS_TCB        *p_tcb,
@@ -428,10 +431,13 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        void          *p_ext,
                        OS_OPT         opt,
                        OS_ERR        *p_err)		
-{		
+{	
+  
+
+
   if(period != 0)		
   {		
-    OS_PRIO P;
+    
     CPU_STK_SIZE   i;		
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u		
     OS_OBJ_QTY     reg_nbr;		
@@ -525,7 +531,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */		
     p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */		
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */		
-//    p_tcb->Prio          = prio;                            /* Save the task's priority                               */		
+    //    p_tcb->Prio          = prio;                            /* Save the task's priority                               */		
     p_tcb->Prio          = ((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4;      //      for RM scheduling
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
@@ -557,27 +563,29 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     REC_TASK_ARR[OS_REC_HEAP.count].p_tcb = p_tcb;
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
     
-   
-//    OSRecPeriod[taskCnt]=p_tcb;
-//    taskCnt += 1;
+    
+    //    OSRecPeriod[taskCnt]=p_tcb;
+    //    taskCnt += 1;
   }
-  
-    OSTaskCreate((OS_TCB        *)p_tcb,
-                       (CPU_CHAR      *)p_name,
-                       (OS_TASK_PTR    )p_task,
-                       (void          *)p_arg,
-                       (OS_PRIO        )((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4, // -->       RM scheduling
-//                       (OS_PRIO        )prio,
-                       (OS_PERIOD      )period,
-                       (CPU_STK       *)p_stk_base,
-                       (CPU_STK_SIZE   )stk_limit,
-                       (CPU_STK_SIZE   )stk_size,
-                       (OS_MSG_QTY     )q_size,
-                       (OS_TICK        )time_quanta,
-                       (void          *)p_ext,
-                       (OS_OPT         )opt,
-                       (OS_ERR        *)p_err);		
-			
+
+
+  OSTaskCreate((OS_TCB        *)p_tcb,
+               (CPU_CHAR      *)p_name,
+               (OS_TASK_PTR    )p_task,
+               (void          *)p_arg,
+               (OS_PRIO        )((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4, // -->       RM scheduling
+               //                       (OS_PRIO        )prio,
+               (OS_PERIOD      )period,
+               (CPU_STK       *)p_stk_base,
+               (CPU_STK_SIZE   )stk_limit,
+               (CPU_STK_SIZE   )stk_size,
+               (OS_MSG_QTY     )q_size,
+               (OS_TICK        )time_quanta,
+               (void          *)p_ext,
+               (OS_OPT         )opt,
+               (OS_ERR        *)p_err);		
+ 
+
 }
 
 
@@ -606,6 +614,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
 void  OSTaskDel (OS_TCB  *p_tcb,
                  OS_ERR  *p_err)
 {
+
+    
     CPU_SR_ALLOC();
 
 
@@ -704,6 +714,7 @@ void  OSTaskDel (OS_TCB  *p_tcb,
     OSSched();                                              /* Find new highest priority task                         */
 
     *p_err = OS_ERR_NONE;
+
 }
 #endif
 
@@ -711,7 +722,8 @@ void  OSTaskDel (OS_TCB  *p_tcb,
 void  OSRecTaskDelete (OS_TCB  *p_tcb,
                  OS_ERR  *p_err)
 {
-  testCnt +=  1;
+
+  
     CPU_SR_ALLOC();
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {

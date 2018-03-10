@@ -46,6 +46,7 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
+
   
   OS_TCB *p_tcb;	
   //    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
@@ -158,7 +159,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
        
       count++;
     }
-  
   OSSched();	
 }		
 
@@ -179,8 +179,15 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 
 void  OS_TickTask (void *p_arg)
 {
+//  CPU_TS32 ts_start1;
+//  CPU_TS32 ts_end1; 
+//  int P = 0;
+//  
+//  
+//  ts_start1 = CPU_TS_Get32();
     OS_ERR  err;
     CPU_TS  ts;
+    
 
 
     p_arg = p_arg;                                          /* Prevent compiler warning                               */
@@ -194,11 +201,15 @@ void  OS_TickTask (void *p_arg)
          if (err == OS_ERR_NONE) {		
             if (OSRunning == OS_STATE_OS_RUNNING) {		
 //         ts_end1 = OS_TS_GET() - ts_start;		
+//              P = P;
+//              ts_end1 = CPU_TS_Get32();
+//              P = P;;
 		OS_revive_rec_task();  // insertion of the tasks into the ready list
                 OS_TickListUpdate();                        /* Update all tasks waiting for time                      */ 
             }
         }
     }
+
 }
 
 /*$PAGE*/
@@ -527,6 +538,8 @@ void  OS_TickListResetPeak (void)
 
 void  OS_TickListUpdate (void)
 {
+
+  
     CPU_BOOLEAN        done;
     OS_TICK_SPOKE     *p_spoke;
     OS_TCB            *p_tcb;
@@ -626,5 +639,6 @@ void  OS_TickListUpdate (void)
     if (ts_end > OSTickTaskTimeMax) {
         OSTickTaskTimeMax = ts_end;
     }
+
     OS_CRITICAL_EXIT();
 }
