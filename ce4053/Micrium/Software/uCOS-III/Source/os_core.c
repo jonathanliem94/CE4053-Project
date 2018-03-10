@@ -375,22 +375,22 @@ void  OSSched (void)
     
     current = OSRdyList[i].HeadPtr;
     CPU_INT_DIS();
-    while (i<=OS_PRIO_TBL_SIZE)
-    {
-      while (current != 0)
-      {
-        while (current->NextPtr != 0)
-        {
-          new_priority = ((current->Deadline-OSTickCtr)/1000)+3;
-          OSTaskChangePrio ((OS_TCB   *)current,
-                            (OS_PRIO   )new_priority,
-                            (OS_ERR   *)p_err);
-        }
-        current= current->NextPtr;
-      }
-      i++;
-      current = OSRdyList[i].HeadPtr;
-    }
+//    while (i<=OS_PRIO_TBL_SIZE)
+//    {
+//      while (current != 0)
+//      {
+//        while (current->NextPtr != 0)
+//        {
+//          new_priority = ((current->Deadline-OSTickCtr)/1000)+4;
+//          OSTaskChangePrio ((OS_TCB   *)current,
+//                            (OS_PRIO   )new_priority,
+//                            (OS_ERR   *)p_err);
+//        }
+//        current= current->NextPtr;
+//      }
+//      i++;
+//      current = OSRdyList[i].HeadPtr;
+//    }
       
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
