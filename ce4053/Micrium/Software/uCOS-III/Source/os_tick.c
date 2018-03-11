@@ -44,6 +44,24 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 ************************************************************************************************************************
 */
 
+/*
+************************************************************************************************************************
+*                                                 Reviving a Recursive Task
+  This will run everytime OS_TickTask is run.
+  When TickTask is run, OSTickCtr will be incremented, this is a value we will compare against the 
+    deadline of the recursive tasks inside heap.
+  We always compare against the root node of the heap since it will always be the one with the lowest deadline.
+  When that condition is ture, we "create" the task again by making p_tcb = to the one stored in the heap
+  But we add additional stuff, and also update the deadline to period+OSTickCtr
+      insert the prio and the task into ready list
+  after adding all these, we need to remove the task from the heap, and add it back in since it's deadline will be updated
+  This is done by doing the heap and array thing again, followed by pushing and popping of the heap
+
+
+************************************************************************************************************************
+*/
+
+
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 

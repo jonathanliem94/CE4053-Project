@@ -558,9 +558,21 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     OS_MsgQInit(&p_tcb->MsgQ,                               /* Initialize the task's message queue                    */		
                 q_size);		
 #endif		
+    /*  we create an array to store period, deadline and p_tcb in one index.
+        Defined as below:
+        struct node{
+                int period;
+                int deadline;
+                OS_TCB *p_tcb;
+        so we create REC_TASK_ARR[] to store the current recTask that's created
+        keep track of the index to store by using heap.count which stores the number of elements in th heap
+};
+    */
     REC_TASK_ARR[OS_REC_HEAP.count].period = p_tcb->Period;
     REC_TASK_ARR[OS_REC_HEAP.count].deadline = p_tcb->Deadline;
     REC_TASK_ARR[OS_REC_HEAP.count].p_tcb = p_tcb;
+    
+    //  followed by pushing it into a heap
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
     
     
@@ -568,7 +580,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     //    taskCnt += 1;
   }
 
-
+  //    after doing so we create the task normally so that it gets released at the start
   OSTaskCreate((OS_TCB        *)p_tcb,
                (CPU_CHAR      *)p_name,
                (OS_TASK_PTR    )p_task,
