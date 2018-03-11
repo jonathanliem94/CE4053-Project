@@ -67,13 +67,16 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 
   
   OS_TCB *p_tcb;	
-  //    p_tcb = AVL_NAME(search)(&Rec_Task_Tree, &OSTickCtr);
-  //  for(int i = 0; i<128; i++)
-  //  {
   CPU_INT16U   p; 
   OS_ERR *p_err;
-//  for (p = 0; p <=taskCnt-1 ; p++) {
-//    if (OSTickCtr%(OSRecPeriod[p]->Deadline)==0)
+  
+//   CPU_TS32 ts_start1;
+//  CPU_TS32 ts_end1; 
+//  int P = 0;
+//  
+//  
+//  ts_start1 = CPU_TS_Get32();
+  
   while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)
     {		
       p_tcb = OS_REC_HEAP.node_arr[0]->p_tcb;
@@ -177,6 +180,9 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
        
       count++;
     }
+//                P = P;
+//              ts_end1 = CPU_TS_Get32();
+//              P = P;;
   OSSched();	
 }		
 
@@ -218,7 +224,7 @@ void  OS_TickTask (void *p_arg)
 //           ts_start = OS_TS_GET();
          if (err == OS_ERR_NONE) {		
             if (OSRunning == OS_STATE_OS_RUNNING) {		
-//         ts_end1 = OS_TS_GET() - ts_start;		
+		
 //              P = P;
 //              ts_end1 = CPU_TS_Get32();
 //              P = P;;
