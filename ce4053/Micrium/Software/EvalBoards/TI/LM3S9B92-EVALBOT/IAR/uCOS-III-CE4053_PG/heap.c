@@ -24,7 +24,7 @@ void heap_init(struct heap *h)
 // Inserts element to the heap
 void heap_push(struct heap *h, struct node *node_arr)
 {
-	unsigned int index, parent;
+  unsigned int index, parent;
 
 	// Resize the heap if it is too small to hold all the data
 	if (h->count == h->size)
@@ -47,6 +47,8 @@ void heap_push(struct heap *h, struct node *node_arr)
 // Removes the minimum element from the heap
 void heap_pop(struct heap *h)
 {
+
+    
 	unsigned int index, swap, other;
 	struct node *temp;
 	// Remove the minimum element
@@ -71,4 +73,6 @@ void heap_pop(struct heap *h)
 		h->node_arr[index] = h->node_arr[swap];
 	}
 	h->node_arr[index] = temp;
+        
+
 } 

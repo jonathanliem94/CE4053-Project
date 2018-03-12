@@ -53,12 +53,11 @@
         so based on priority scheduling, LED Blink should happen first
         this is already implemented in the Micrium, but not periodicity, which is what we need to do
 */
-#define  LED_BLINK_PRIO                                 10u
+#define  LED_BLINK_PRIO                                 7u
 #define  MOV_FORWARD_PRIO                               6u
 #define  MOV_BACKWARD_PRIO                              8u
-#define  LEFT_TURN_PRIO                                 7u
+#define  LEFT_TURN_PRIO                                 11u
 #define  RIGHT_TURN_PRIO                                9u
-//#define  JobLED_BLINK_PRIO                              4u
 
 
 /*

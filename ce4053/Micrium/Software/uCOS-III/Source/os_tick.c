@@ -122,10 +122,12 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
       
-      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 		
-#endif 		
-#endif 		
+      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 	
       
+      
+#endif 		
+#endif 		
+      p_tcb->TaskState  = (OS_STATE)OS_TASK_STATE_RDY;          //      assign task state to be ready
       p_tcb->TimeQuanta    = 0;   		
       
 #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u 		
@@ -156,7 +158,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       //OSTaskCreateHook(p_tcb);         
       
-//      OS_CRITICAL_ENTER();		
+//      OS_CRITICAL_ENTER();		        //      will break robot if enabled
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);		
       
@@ -220,10 +222,12 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
       
-      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 		
-#endif 		
-#endif 		
+      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 	
       
+      
+#endif 		
+#endif 		
+      p_tcb->TaskState  = (OS_STATE)OS_TASK_STATE_RDY;  //      assign task state to be ready
       p_tcb->TimeQuanta    = 0;   		
       
 #if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u 		
@@ -253,7 +257,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 #endif 		
       
       //OSTaskCreateHook(p_tcb);                              		
-      // OS_CRITICAL_ENTER();		
+      // OS_CRITICAL_ENTER();		//      will break robot if enabled
       
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);		
@@ -270,8 +274,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       new_nodeArr[count].deadline = p_tcb->Deadline;
       new_nodeArr[count].period = p_tcb->Period;
       new_nodeArr[count].p_tcb = p_tcb;
-      OS_CRITICAL_ENTER();
-      //      OSRecPeriod[p]=p_tcb;
+      OS_CRITICAL_ENTER();    //      do we need this?
       heap_pop(&OS_REC_HEAP);
       OS_CRITICAL_EXIT_NO_SCHED();	
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
