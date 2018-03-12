@@ -255,6 +255,12 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
                     OS_ERR        *p_err)
 {   
  
+//     CPU_TS32 ts_start1;
+//  CPU_TS32 ts_end1; 
+//  int P = 0;
+//  
+//  
+//  ts_start1 = CPU_TS_Get32();
   
     CPU_STK_SIZE   i;
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u
@@ -412,7 +418,9 @@ void  OSTaskCreate (OS_TCB        *p_tcb,
     }
     
     OS_CRITICAL_EXIT_NO_SCHED();
-
+//                P = P;
+//              ts_end1 = CPU_TS_Get32();
+//              P = P;;
     OSSched();
 
 }
@@ -503,7 +511,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
         return;		
       }		
     }		
-    //OS_TaskInitTCB(p_tcb);                                  /* Initialize the TCB to default values                   */		
+    OS_TaskInitTCB(p_tcb);                                  /* Initialize the TCB to default values                   */		
     *p_err = OS_ERR_NONE;		
     /* --------------- CLEAR THE TASK'S STACK --------------- */		
     if ((opt & OS_OPT_TASK_STK_CHK) != (OS_OPT)0) {         /* See if stack checking has been enabled                 */		
@@ -531,7 +539,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */		
     p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */		
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */		
-    //    p_tcb->Prio          = prio;                            /* Save the task's priority                               */		
+//        p_tcb->Prio          = prio;                            /* for normal recursion                             */		
     p_tcb->Prio          = ((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4;      //      for RM scheduling
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
@@ -569,33 +577,52 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
 };
     */
     REC_TASK_ARR[OS_REC_HEAP.count].period = p_tcb->Period;
-    REC_TASK_ARR[OS_REC_HEAP.count].deadline = p_tcb->Deadline;
+    REC_TASK_ARR[OS_REC_HEAP.count].deadline = p_tcb->Deadline;       //      for RM
     REC_TASK_ARR[OS_REC_HEAP.count].p_tcb = p_tcb;
     
     //  followed by pushing it into a heap
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
     
     
-    //    OSRecPeriod[taskCnt]=p_tcb;
-    //    taskCnt += 1;
+//        OSTaskCreateHook(p_tcb);                                /* Call user defined hook                                 */
+//
+//                                                            /* --------------- ADD TASK TO READY LIST --------------- */
+//    OS_CRITICAL_ENTER();
+//    OS_PrioInsert(p_tcb->Prio);
+//    OS_RdyListInsertTail(p_tcb);
+
+#if OS_CFG_DBG_EN > 0u
+    OS_TaskDbgListAdd(p_tcb);
+#endif
+
+    OSTaskQty++;                                            /* Increment the #tasks counter                           */
+
+    if (OSRunning != OS_STATE_OS_RUNNING) {                 /* Return if multitasking has not started                 */
+        OS_CRITICAL_EXIT();
+        return;
+    }
+    
+    OS_CRITICAL_EXIT_NO_SCHED();
+
+    OSSched();
   }
 
   //    after doing so we create the task normally so that it gets released at the start
-  OSTaskCreate((OS_TCB        *)p_tcb,
-               (CPU_CHAR      *)p_name,
-               (OS_TASK_PTR    )p_task,
-               (void          *)p_arg,
-               (OS_PRIO        )((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4, // -->       RM scheduling
-               //                       (OS_PRIO        )prio,
-               (OS_PERIOD      )period,
-               (CPU_STK       *)p_stk_base,
-               (CPU_STK_SIZE   )stk_limit,
-               (CPU_STK_SIZE   )stk_size,
-               (OS_MSG_QTY     )q_size,
-               (OS_TICK        )time_quanta,
-               (void          *)p_ext,
-               (OS_OPT         )opt,
-               (OS_ERR        *)p_err);		
+//  OSTaskCreate((OS_TCB        *)p_tcb,
+//               (CPU_CHAR      *)p_name,
+//               (OS_TASK_PTR    )p_task,
+//               (void          *)p_arg,
+//               (OS_PRIO        )((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4, // -->       RM scheduling
+////                                      (OS_PRIO        )prio,    //      for recursion normal
+//               (OS_PERIOD      )period,
+//               (CPU_STK       *)p_stk_base,
+//               (CPU_STK_SIZE   )stk_limit,
+//               (CPU_STK_SIZE   )stk_size,
+//               (OS_MSG_QTY     )q_size,
+//               (OS_TICK        )time_quanta,
+//               (void          *)p_ext,
+//               (OS_OPT         )opt,
+//               (OS_ERR        *)p_err);		
  
 
 }
