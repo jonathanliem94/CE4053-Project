@@ -32,6 +32,8 @@
 
 #include <os.h>
 #include <heap.h>
+#include  <avltree.h>
+extern struct avl_tree OS_AVL_TREE;
 struct heap OS_REC_HEAP;		
 struct node REC_TASK_ARR[5];
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
@@ -539,8 +541,8 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */		
     p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */		
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */		
-//        p_tcb->Prio          = prio;                            /* for normal recursion                             */		
-    p_tcb->Prio          = ((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4;      //      for RM scheduling
+        p_tcb->Prio          = prio;                            /* for normal recursion                             */		
+//    p_tcb->Prio          = ((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4;      //      for RM scheduling
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
     p_tcb->Period        = period;
@@ -761,7 +763,8 @@ void  OSTaskDel (OS_TCB  *p_tcb,
 void  OSRecTaskDelete (OS_TCB  *p_tcb,
                  OS_ERR  *p_err)
 {
-
+    struct avl_node *cur;
+    struct os_avl_node *node, query;
   
     CPU_SR_ALLOC();
 #ifdef OS_SAFETY_CRITICAL
@@ -794,8 +797,12 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
     OS_CRITICAL_ENTER();
     switch (p_tcb->TaskState) {
         case OS_TASK_STATE_RDY:
-             ///// code modified for rate monotonic
-                 OS_RdyListRemove(p_tcb);
+            /* remove node with this tcb from AVL tree */
+            query.deadline=p_tcb->Deadline;
+            cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+            avl_remove(&OS_AVL_TREE, cur);
+            /* remove from ready list as well */
+            OS_RdyListRemove(p_tcb);
              break;
         case OS_TASK_STATE_SUSPENDED:
              break;

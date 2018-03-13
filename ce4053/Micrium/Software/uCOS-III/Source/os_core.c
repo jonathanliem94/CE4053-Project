@@ -32,6 +32,8 @@
 
 #include  <os.h>
 #include  <heap.h>
+#include  <avltree.h>
+struct avl_tree OS_AVL_TREE;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_core__c = "$Id: $";
 #endif
@@ -113,7 +115,7 @@ void  OSInit (OS_ERR  *p_err)
 #endif
 
     OS_PrioInit();                                          /* Initialize the priority bitmap table                   */
-
+    avl_init(&OS_AVL_TREE, 0);
     OS_RdyListInit();                                       /* Initialize the Ready List                              */
 
     OS_TaskInit(p_err);                                     /* Initialize the task manager                            */
@@ -358,12 +360,12 @@ void  OSSafetyCriticalStart (void)
 
 void  OSSched (void)
 {
-    OS_TCB* current;
-    OS_ERR* p_err;
-    int i = 3;
-    int new_priority;
+    OS_TCB* tree_smallest;
+    OS_PRIO tree_prio;
+    struct avl_node *cur;
+    struct os_avl_node *node, query;
     CPU_SR_ALLOC();
-
+    
 
     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* ISRs still nested?                                     */
         return;                                             /* Yes ... only schedule when no nested ISRs              */
@@ -373,27 +375,26 @@ void  OSSched (void)
         return;                                             /* Yes                                                    */
     }
     
-    current = OSRdyList[i].HeadPtr;
     CPU_INT_DIS();
-//    while (i<=OS_PRIO_TBL_SIZE)
-//    {
-//      while (current != 0)
-//      {
-//        while (current->NextPtr != 0)
-//        {
-//          new_priority = ((current->Deadline-OSTickCtr)/1000)+4;
-//          OSTaskChangePrio ((OS_TCB   *)current,
-//                            (OS_PRIO   )new_priority,
-//                            (OS_ERR   *)p_err);
-//        }
-//        current= current->NextPtr;
-//      }
-//      i++;
-//      current = OSRdyList[i].HeadPtr;
-//    }
-      
+    
+    /* Search for node with smallest deadline greater than 3, and get tcb  & priority*/
+    query.deadline=3;
+    cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
+    node = _get_entry(cur, struct os_avl_node, avl);
+    tree_smallest = node->p_tcb;
+    tree_prio = node->p_tcb->Prio;
+    
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
+    
+    /* Compare AVL tree and original */
+    /* if more than 3, means non internal task, i.e. recursive tasks */
+    if (OSPrioHighRdy > 3)
+    {
+      OSPrioHighRdy = tree_prio;
+      OSTCBHighRdyPtr = tree_smallest;
+    }
+    
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
         CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
         return;

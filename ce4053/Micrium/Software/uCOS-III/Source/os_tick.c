@@ -32,6 +32,8 @@
 
 #include <os.h>
 #include <heap.h>
+#include  <avltree.h>
+extern struct avl_tree OS_AVL_TREE;
 extern struct heap OS_REC_HEAP;
 struct node new_nodeArr[100];
 CPU_INT16U count = 0;
@@ -65,7 +67,7 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 
-  
+  struct os_avl_node *node;
   OS_TCB *p_tcb;	
   CPU_INT16U   p; 
   OS_ERR *p_err;
@@ -160,7 +162,13 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
 //      OS_CRITICAL_ENTER();		        //      will break robot if enabled
       OS_PrioInsert(p_tcb->Prio);		
-      OS_RdyListInsertTail(p_tcb);		
+      OS_RdyListInsertTail(p_tcb);
+      
+      /*insert into AVL tree as well */
+      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
+      node->deadline = p_tcb->Deadline;
+      node->p_tcb = p_tcb;
+      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -181,8 +189,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 //******************************   
   
   else {
-    while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)     //      for RM
-      //  while (OSTickCtr % OS_REC_HEAP.node_arr[0]->period == 0)
+    while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)     
     {		
       p_tcb = OS_REC_HEAP.node_arr[0]->p_tcb;
       CPU_STK_SIZE   j; 		
@@ -261,6 +268,12 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);		
+      
+      /*insert into AVL tree as well */
+      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
+      node->deadline = p_tcb->Deadline;
+      node->p_tcb = p_tcb;
+      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		

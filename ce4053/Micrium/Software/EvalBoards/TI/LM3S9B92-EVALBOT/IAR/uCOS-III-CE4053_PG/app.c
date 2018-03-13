@@ -48,8 +48,7 @@
 #define TASK2PERIOD                   20
 
 
-#define WORKLOAD1                     2
-#define WORKLOAD2                     2
+#define WORKLOAD                     2
 
 #define LED_BLINK_Proc                 0x01
 #define MOVE_FOR_Proc                   0x02
@@ -297,7 +296,7 @@ static  void  moveForward (void  *p_arg)
   CPU_INT32U  k, i, j;
   
   RoboTurn(FRONT, 16, 50);
-  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  for(k=0; k<WORKLOAD; k++)        //      for WORKLOAD seconds
   {
     for(i=0; i <ONESECONDTICK; i++){
       j=2*i;
@@ -314,7 +313,7 @@ static  void moveBackward (void *p_arg)
   CPU_INT32U  k, i, j;
   
   RoboTurn(BACK, 16, 50);
-  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  for(k=0; k<WORKLOAD; k++)        //      for WORKLOAD seconds
   {
     for(i=0; i <ONESECONDTICK; i++){
       j=2*i;
@@ -331,7 +330,7 @@ static  void leftTurn (void *p_arg)
   CPU_INT32U  k, i, j;
   
   RoboTurn(LEFT_SIDE, 16, 50);
-  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  for(k=0; k<WORKLOAD; k++)        //      for WORKLOAD seconds
   {
     for(i=0; i <ONESECONDTICK; i++){
       j=2*i;
@@ -348,7 +347,7 @@ static  void rightTurn (void *p_arg)
   CPU_INT32U  k, i, j;
   
   RoboTurn(RIGHT_SIDE, 16, 50);
-  for(k=0; k<3; k++)        //      for WORKLOAD seconds
+  for(k=0; k<WORKLOAD; k++)        //      for WORKLOAD seconds
   {
     for(i=0; i <ONESECONDTICK; i++){
       j=2*i;
