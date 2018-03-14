@@ -36,6 +36,8 @@
 extern struct avl_tree OS_AVL_TREE;
 extern struct heap OS_REC_HEAP;
 struct node new_nodeArr[100];
+struct os_avl_node new_avl_nodeArr[200];
+CPU_INT16U avl_count=0;;
 CPU_INT16U count = 0;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_tick__c = "$Id: $";
@@ -67,7 +69,6 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 
-  struct os_avl_node *node;
   OS_TCB *p_tcb;	
   CPU_INT16U   p; 
   OS_ERR *p_err;
@@ -160,15 +161,10 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       //OSTaskCreateHook(p_tcb);         
       
-//      OS_CRITICAL_ENTER();		        //      will break robot if enabled
+      //      OS_CRITICAL_ENTER();		        //      will break robot if enabled
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);
       
-      /*insert into AVL tree as well */
-      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
-      node->deadline = p_tcb->Deadline;
-      node->p_tcb = p_tcb;
-      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -270,10 +266,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       OS_RdyListInsertTail(p_tcb);		
       
       /*insert into AVL tree as well */
-      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
-      node->deadline = p_tcb->Deadline;
-      node->p_tcb = p_tcb;
-      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
+//      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -287,9 +280,17 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       new_nodeArr[count].deadline = p_tcb->Deadline;
       new_nodeArr[count].period = p_tcb->Period;
       new_nodeArr[count].p_tcb = p_tcb;
+      new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
+      new_avl_nodeArr[avl_count].p_tcb = p_tcb;
       OS_CRITICAL_ENTER();    //      do we need this?
+      
+      avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
       heap_pop(&OS_REC_HEAP);
+      
       OS_CRITICAL_EXIT_NO_SCHED();	
+      avl_count++;
+      if (avl_count == 200)
+        avl_count=0;
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
       //      
       //      int new_priority = ((p_tcb->Deadline-OSTickCtr)/1000)+3;
