@@ -36,6 +36,8 @@
 extern struct avl_tree OS_AVL_TREE;
 extern struct heap OS_REC_HEAP;
 struct node new_nodeArr[100];
+struct os_avl_node new_avl_nodeArr[200];
+CPU_INT16U avl_count=0;;
 CPU_INT16U count = 0;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_tick__c = "$Id: $";
@@ -67,7 +69,6 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 
-  struct os_avl_node *node;
   OS_TCB *p_tcb;	
   CPU_INT16U   p; 
   OS_ERR *p_err;
@@ -87,88 +88,83 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
     for (int k = 0; k < 5; k++) 
     {
       p_tcb = OS_REC_HEAP.node_arr[k]->p_tcb;
-      CPU_STK_SIZE   j; 		
-#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
-      OS_OBJ_QTY     reg_nbr; 		
-#endif 		
-      CPU_STK       *p_sp; 		
+//      CPU_STK_SIZE   j; 		
+//#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
+//      OS_OBJ_QTY     reg_nbr; 		
+//#endif 		
+//      CPU_STK       *p_sp; 		
       CPU_SR_ALLOC(); 		
+//      
+//      //  *p_err = OS_ERR_NONE; 		
+//#if 1                                                          /* --------------- CLEAR THE TASK'S STACK --------------- */ 		
+//      p_sp = p_tcb->StkBasePtr; 		
+//      for (j = 0u; j < p_tcb->StkSize; j++) {                 /* Stack grows from HIGH to LOW memory                    */ 		
+//        *p_sp = (CPU_STK)0;                                   /* Clear from bottom of stack and up!                     */ 		
+//        p_sp++; 		
+//      } 		
+//      /* ------- INITIALIZE THE STACK FRAME OF THE TASK ------- */ 		
+//      p_sp = OSTaskStkInit(p_tcb->TaskEntryAddr, 		
+//                           p_tcb->TaskEntryArg, 		
+//                           p_tcb->StkBasePtr, 		
+//                           p_tcb->StkLimitPtr, 		
+//                           p_tcb->StkSize, 		
+//                           p_tcb->Opt); 		
+//      p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */ 	
+//      p_tcb->Deadline      =    p_tcb->Period+OSTickCtr;        //      need to update the corresponding deadline for each recursive task
+//      
+//#if 0 		
+//      /* -------------- INITIALIZE THE TCB FIELDS ------------- */ 		
+//      p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */ 		
+//      p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */ 		
+//      
+//      p_tcb->NamePtr       = p_name;                          /* Save task name                                         */ 		
+//      
+//      p_tcb->Prio          = prio;                            /* Save the task's priority                               */ 		
+//      p_tcb->Period        = period;
+//      p_tcb->Deadline      =period+OSTickCtr;
+//      
+//      p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
+//      
+//      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 	
+//      
+//      
+//#endif 		
+//#endif 		
+//      p_tcb->TaskState  = (OS_STATE)OS_TASK_STATE_RDY;          //      assign task state to be ready
+//      p_tcb->TimeQuanta    = 0;   		
+//      
+//#if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u 		
+//      if (p_tcb->TimeQuanta == (OS_TICK)0) { 		
+//        p_tcb->TimeQuantaCtr = OSSchedRoundRobinDfltTimeQuanta; 		
+//      } else { 		
+//        p_tcb->TimeQuantaCtr = p_tcb->TimeQuanta; 		
+//      } 		
+//#endif 		
+//#if 0 		
+//      p_tcb->ExtPtr        = p_ext;                           /* Save pointer to TCB extension                          */ 		
+//      p_tcb->StkBasePtr    = p_stk_base;                      /* Save pointer to the base address of the stack          */ 		
+//      p_tcb->StkSize       = stk_size;                        /* Save the stack size (in number of CPU_STK elements)    */ 		
+//      p_tcb->Opt           = opt;                             /* Save task options                                      */ 		
+//#endif 		
+//      
+//#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
+//      for (reg_nbr = 0u; reg_nbr < OS_CFG_TASK_REG_TBL_SIZE; reg_nbr++) { 		
+//        p_tcb->RegTbl[reg_nbr] = (OS_REG)0; 		
+//      } 		
+//#endif 		
+//#if 0 		
+//#if OS_CFG_TASK_Q_EN > 0u 		
+//      OS_MsgQInit(&p_tcb->MsgQ,                               /* Initialize the task's message queue                    */ 		
+//                  q_size); 		
+//#endif 		
+//#endif 		
+//      
+//      //OSTaskCreateHook(p_tcb);         
       
-      //  *p_err = OS_ERR_NONE; 		
-#if 1                                                          /* --------------- CLEAR THE TASK'S STACK --------------- */ 		
-      p_sp = p_tcb->StkBasePtr; 		
-      for (j = 0u; j < p_tcb->StkSize; j++) {                 /* Stack grows from HIGH to LOW memory                    */ 		
-        *p_sp = (CPU_STK)0;                                   /* Clear from bottom of stack and up!                     */ 		
-        p_sp++; 		
-      } 		
-      /* ------- INITIALIZE THE STACK FRAME OF THE TASK ------- */ 		
-      p_sp = OSTaskStkInit(p_tcb->TaskEntryAddr, 		
-                           p_tcb->TaskEntryArg, 		
-                           p_tcb->StkBasePtr, 		
-                           p_tcb->StkLimitPtr, 		
-                           p_tcb->StkSize, 		
-                           p_tcb->Opt); 		
-      p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */ 	
-      p_tcb->Deadline      =    p_tcb->Period+OSTickCtr;        //      need to update the corresponding deadline for each recursive task
-      
-#if 0 		
-      /* -------------- INITIALIZE THE TCB FIELDS ------------- */ 		
-      p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */ 		
-      p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */ 		
-      
-      p_tcb->NamePtr       = p_name;                          /* Save task name                                         */ 		
-      
-      p_tcb->Prio          = prio;                            /* Save the task's priority                               */ 		
-      p_tcb->Period        = period;
-      p_tcb->Deadline      =period+OSTickCtr;
-      
-      p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
-      
-      p_tcb->TimeQuanta    = time_quanta;                     /* Save the #ticks for time slice (0 means not sliced)    */ 	
-      
-      
-#endif 		
-#endif 		
-      p_tcb->TaskState  = (OS_STATE)OS_TASK_STATE_RDY;          //      assign task state to be ready
-      p_tcb->TimeQuanta    = 0;   		
-      
-#if OS_CFG_SCHED_ROUND_ROBIN_EN > 0u 		
-      if (p_tcb->TimeQuanta == (OS_TICK)0) { 		
-        p_tcb->TimeQuantaCtr = OSSchedRoundRobinDfltTimeQuanta; 		
-      } else { 		
-        p_tcb->TimeQuantaCtr = p_tcb->TimeQuanta; 		
-      } 		
-#endif 		
-#if 0 		
-      p_tcb->ExtPtr        = p_ext;                           /* Save pointer to TCB extension                          */ 		
-      p_tcb->StkBasePtr    = p_stk_base;                      /* Save pointer to the base address of the stack          */ 		
-      p_tcb->StkSize       = stk_size;                        /* Save the stack size (in number of CPU_STK elements)    */ 		
-      p_tcb->Opt           = opt;                             /* Save task options                                      */ 		
-#endif 		
-      
-#if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
-      for (reg_nbr = 0u; reg_nbr < OS_CFG_TASK_REG_TBL_SIZE; reg_nbr++) { 		
-        p_tcb->RegTbl[reg_nbr] = (OS_REG)0; 		
-      } 		
-#endif 		
-#if 0 		
-#if OS_CFG_TASK_Q_EN > 0u 		
-      OS_MsgQInit(&p_tcb->MsgQ,                               /* Initialize the task's message queue                    */ 		
-                  q_size); 		
-#endif 		
-#endif 		
-      
-      //OSTaskCreateHook(p_tcb);         
-      
-//      OS_CRITICAL_ENTER();		        //      will break robot if enabled
+      //      OS_CRITICAL_ENTER();		        //      will break robot if enabled
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);
       
-      /*insert into AVL tree as well */
-      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
-      node->deadline = p_tcb->Deadline;
-      node->p_tcb = p_tcb;
-      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -270,10 +266,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       OS_RdyListInsertTail(p_tcb);		
       
       /*insert into AVL tree as well */
-      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
-      node->deadline = p_tcb->Deadline;
-      node->p_tcb = p_tcb;
-      avl_insert(&OS_AVL_TREE, &node->avl, cmp_func);
+//      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -287,9 +280,17 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       new_nodeArr[count].deadline = p_tcb->Deadline;
       new_nodeArr[count].period = p_tcb->Period;
       new_nodeArr[count].p_tcb = p_tcb;
+      new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
+      new_avl_nodeArr[avl_count].p_tcb = p_tcb;
       OS_CRITICAL_ENTER();    //      do we need this?
+      
+      avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
       heap_pop(&OS_REC_HEAP);
+      
       OS_CRITICAL_EXIT_NO_SCHED();	
+      avl_count++;
+      if (avl_count == 200)
+        avl_count=0;
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
       //      
       //      int new_priority = ((p_tcb->Deadline-OSTickCtr)/1000)+3;

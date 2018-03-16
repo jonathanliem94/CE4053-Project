@@ -376,24 +376,28 @@ void  OSSched (void)
     }
     
     CPU_INT_DIS();
-    
-    /* Search for node with smallest deadline greater than 3, and get tcb  & priority*/
-    query.deadline=3;
-    cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
-    node = _get_entry(cur, struct os_avl_node, avl);
-    tree_smallest = node->p_tcb;
-    tree_prio = node->p_tcb->Prio;
-    
+
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
     
-    /* Compare AVL tree and original */
-    /* if more than 3, means non internal task, i.e. recursive tasks */
-    if (OSPrioHighRdy > 3)
+        
+    /* Search for node with smallest deadline greater than 3, and get tcb  & priority*/
+    if (OS_AVL_TREE.root != 0)
     {
-      OSPrioHighRdy = tree_prio;
-      OSTCBHighRdyPtr = tree_smallest;
+      query.deadline=0;
+      cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
+      node = _get_entry(cur, struct os_avl_node, avl);
+      tree_smallest = node->p_tcb;
+      tree_prio = node->p_tcb->Prio;
+      /* Compare AVL tree and original */
+      /* if more than 3, means non internal task, i.e. recursive tasks */
+      if (OSPrioHighRdy > 3)
+      {
+        OSPrioHighRdy = tree_prio;
+        OSTCBHighRdyPtr = tree_smallest;
+      }
     }
+
     
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
         CPU_INT_EN();                                       /* Yes ... no need to context switch                      */

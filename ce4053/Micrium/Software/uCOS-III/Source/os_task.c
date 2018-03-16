@@ -34,6 +34,8 @@
 #include <heap.h>
 #include  <avltree.h>
 extern struct avl_tree OS_AVL_TREE;
+extern struct os_avl_node new_avl_nodeArr[200];
+extern CPU_INT16U avl_count;
 struct heap OS_REC_HEAP;		
 struct node REC_TASK_ARR[5];
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
@@ -443,7 +445,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        OS_ERR        *p_err)		
 {	
   
-
+  struct os_avl_node node;
 
   if(period != 0)		
   {		
@@ -584,7 +586,14 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     
     //  followed by pushing it into a heap
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
-    
+    /*insert into AVL tree as well */
+//    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
+    new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
+    new_avl_nodeArr[avl_count].p_tcb = p_tcb;
+    avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+    avl_count++;
+    if (avl_count == 200)
+      avl_count=0;
     
 //        OSTaskCreateHook(p_tcb);                                /* Call user defined hook                                 */
 //
