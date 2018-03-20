@@ -32,11 +32,11 @@
                 </option>
                 <option>
                     <name>Input description</name>
-                    <state>Full formatting.</state>
+                    <state>Full formatting, with multibyte support.</state>
                 </option>
                 <option>
                     <name>Output description</name>
-                    <state>Full formatting.</state>
+                    <state>Full formatting, with multibyte support.</state>
                 </option>
                 <option>
                     <name>GOutputBinary</name>
@@ -355,6 +355,7 @@
                     <state>$PROJ_DIR$\..\..\..\..\..\uC-Probe\Target\Communication\Generic\Source</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Source</state>
                     <state>$PROJ_DIR$\..\..\..\..\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\LuminaryMicro\LM3Sxxxx</state>
+                    <state>C:\Users\nickm\OneDrive\Documents\NTU\Year 3\Semester 2\CE4053 Embedded OS\Lab (Free Access)\Repository\ce4053\Micrium Phase 2\Software\uC-Probe\Target\Communication\Generic\Source</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
