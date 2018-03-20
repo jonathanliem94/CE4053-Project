@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\uCOS-III-CE4053_PG\uCOS-III-CE4053_PG.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>uCOS-LM3S9B92-EVALBOT</name>
+      <member>
+        <project>uCOS-III-Ex1</project>
+        <configuration>Flash</configuration>
+      </member>
+      <member>
+        <project>uCOS-III-Ex2</project>
+        <configuration>Flash</configuration>
+      </member>
+      <member>
+        <project>uCOS-III-Ex3</project>
+        <configuration>Flash</configuration>
+      </member>
+      <member>
+        <project>uCOS-III-Ex4</project>
+        <configuration>Flash</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
+
+
