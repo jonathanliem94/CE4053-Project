@@ -1182,7 +1182,7 @@ OS_EXT            OS_OBJ_QTY             OSTaskQty;                   /* Number 
 OS_EXT            OS_TICK                OSTickCtr;                   /* Counts the #ticks since startup or last set  */
 OS_EXT            OS_TCB                 OSTickTaskTCB;
 OS_EXT            CPU_TS                 OSTickTaskTimeMax;
-
+OS_EXT            CPU_INT32U             syncRelease;       
 
 #if OS_CFG_TMR_EN > 0u                                                /* TIMERS ------------------------------------- */
 #if OS_CFG_DBG_EN > 0u

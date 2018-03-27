@@ -82,7 +82,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   Only done at start --> OSTickCtr == 0
 ************************************************************************************************************************
 */
-  if (OSTickCtr == 0) {
+  if (OSTickCtr == 5) {
     //  iterate through heap (size 5) 
     //  add them all into readylist at one go
     for (int k = 0; k < 5; k++) 
@@ -106,6 +106,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
+    syncRelease = 1;
   }
 //******************************        if no longer at the start       *****************************************************************************************
 //******************************   

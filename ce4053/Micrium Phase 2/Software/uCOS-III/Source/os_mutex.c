@@ -37,6 +37,7 @@
 extern struct avl_tree OS_AVL_TREE;
 extern OS_DEADLINE OS_SYSTEM_CEILING;
 extern struct RBTree* OS_BLOCKED_RDY_TREE;
+struct stack_node OS_MUTEX_STACK_HEAD;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_mutex__c = "$Id: $";
 #endif
@@ -458,7 +459,12 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
              timeout);
 
     OS_CRITICAL_EXIT_NO_SCHED();
-
+/*      pushing of mutex into stack       */
+    stack_push(&OS_MUTEX_STACK_HEAD, p_mutex);   //      this pushes the current mutex pointer into the stack of mutexes
+    //  then we need to check through the stack to find min deadline
+    //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
+    OS_SYSTEM_CEILING = stack_find_min_deadline(&OS_MUTEX_STACK_HEAD);
+    /*############################################################## */
     OSSched();                                              /* Find the next highest priority task ready to run       */
 
     CPU_CRITICAL_ENTER();
@@ -736,7 +742,12 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
       rbtree_del(OS_BLOCKED_RDY_TREE, cur->key);
       cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE->root);
     }
-    
+    /*      popping of mutex off stack       */
+    stack_pop(&OS_MUTEX_STACK_HEAD, p_mutex);   //      this pushes the current mutex pointer into the stack of mutexes
+    //  then we need to check through the stack to find min deadline
+    //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
+    OS_SYSTEM_CEILING = stack_find_min_deadline(&OS_MUTEX_STACK_HEAD);
+    /*################################################################################################################*/
     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
         OSSched();                                          /* Run the scheduler                                      */
     }
