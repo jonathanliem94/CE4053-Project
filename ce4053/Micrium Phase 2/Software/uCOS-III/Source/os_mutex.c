@@ -31,11 +31,15 @@
 */
 
 #include <os.h>
-
+#include <avltree.h>
+#include <redblack.h>
+#include <stack.h>
+extern struct avl_tree OS_AVL_TREE;
+extern OS_DEADLINE OS_SYSTEM_CEILING;
+extern struct RBTree* OS_BLOCKED_RDY_TREE;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_mutex__c = "$Id: $";
 #endif
-
 
 #if OS_CFG_MUTEX_EN > 0u
 /*
@@ -65,6 +69,7 @@ const  CPU_CHAR  *os_mutex__c = "$Id: $";
 
 void  OSMutexCreate (OS_MUTEX    *p_mutex,
                      CPU_CHAR    *p_name,
+                     OS_TCB     *resource_ceiling,
                      OS_ERR      *p_err)
 {
     CPU_SR_ALLOC();
@@ -101,6 +106,7 @@ void  OSMutexCreate (OS_MUTEX    *p_mutex,
 
     CPU_CRITICAL_ENTER();
     p_mutex->Type              =  OS_OBJ_TYPE_MUTEX;        /* Mark the data structure as a mutex                     */
+    p_mutex->Resource_Ceiling  =  resource_ceiling;
     p_mutex->NamePtr           =  p_name;
     p_mutex->OwnerTCBPtr       = (OS_TCB       *)0;
     p_mutex->OwnerNestingCtr   = (OS_NESTING_CTR)0;         /* Mutex is available                                     */
@@ -718,7 +724,19 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
             (CPU_TS       )ts);
 
     OS_CRITICAL_EXIT_NO_SCHED();
-
+    
+    
+    struct RBNode* cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE->root);
+    while ((cur->value->Deadline < OS_SYSTEM_CEILING) || (cur!=0))
+    {
+      struct os_avl_node* new_avl_node = (struct os_avl_node*)memget(sizeof(struct os_avl_node));
+      new_avl_node->deadline = (OS_DEADLINE)cur->key;
+      new_avl_node->p_tcb = cur->value;
+      avl_insert(&OS_AVL_TREE, &new_avl_node->avl, cmp_func);
+      rbtree_del(OS_BLOCKED_RDY_TREE, cur->key);
+      cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE->root);
+    }
+    
     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
         OSSched();                                          /* Run the scheduler                                      */
     }

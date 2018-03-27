@@ -830,6 +830,7 @@ struct  os_mutex {
     OS_OBJ_TYPE          Type;                              /* Mutual Exclusion Semaphore                             */
     CPU_CHAR            *NamePtr;                           /* Should be set to OS_OBJ_TYPE_MUTEX                     */
     OS_PEND_LIST         PendList;                          /* Pointer to Mutex Name (NUL terminated ASCII)           */
+    OS_TCB*         Resource_Ceiling;
 #if OS_CFG_DBG_EN > 0u
     OS_MUTEX            *DbgPrevPtr;
     OS_MUTEX            *DbgNextPtr;
@@ -1287,25 +1288,7 @@ extern  OS_TMR_SPOKE   OSCfg_TmrWheel[];
 ************************************************************************************************************************
 *                                        F U N C T I O N   P R O T O T Y P E S
 ************************************************************************************************************************
-************************************************************************************************************************
-*/
-/*                                                      Recursion                                       */
-//OS_AVL_Node*  OS_AVLInsert (OS_AVL_Node *T, OS_PRIO  prio);
-//
-//OS_AVL_Node*  OS_AVLRemove (OS_AVL_Node *T, OS_PRIO  prio);
-//
-//OS_PRIO         OS_AVLGetMin       (OS_AVL_Node* t);
-//CPU_INT08U OS_AVL_height(OS_AVL_Node *T);
-//OS_AVL_Node *OS_AVL_rotateright(OS_AVL_Node *x);
-//OS_AVL_Node *OS_AVL_rotateleft(OS_AVL_Node *x);
-//OS_AVL_Node *OS_AVL_RR(OS_AVL_Node *T);
-//OS_AVL_Node *OS_AVL_LL(OS_AVL_Node *T);
-//OS_AVL_Node *OS_AVL_LR(OS_AVL_Node *T);
-//OS_AVL_Node *OS_AVL_RL(OS_AVL_Node *T);
-///* Balance Factor */
-//CPU_INT08U OS_AVL_BF(OS_AVL_Node *T);
-
-/* ================================================================================================================== */
+************************************************************************************************************************/
 /*                                                    EVENT FLAGS                                                     */
 /* ================================================================================================================== */
 
@@ -1411,6 +1394,7 @@ void          OS_MemInit                (OS_ERR                *p_err);
 
 void          OSMutexCreate             (OS_MUTEX              *p_mutex,
                                          CPU_CHAR              *p_name,
+                                         OS_TCB            *resource_ceiling,
                                          OS_ERR                *p_err);
 
 #if OS_CFG_MUTEX_DEL_EN > 0u

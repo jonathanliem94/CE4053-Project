@@ -1,189 +1,292 @@
 #include "redblack.h"
- 
-typedef enum ColorType {
-    Red, Black
-} ColorType;
- 
-struct RedBlackNode {
-    ElementType Element;
-    RedBlackTree Left;
-    RedBlackTree Right;
-    ColorType Color;
-};
- 
-static Position NullNode = 0; /* Needs initialization */
- 
-/* Initialization procedure */
-RedBlackTree Initialize(void) {
-    RedBlackTree T;
- 
-    if (NullNode == 0) {
-        NullNode = (struct RedBlackNode*)memget(sizeof (struct RedBlackNode));
-        if (NullNode == 0)
-            FatalError("Out of space!!!");
-        NullNode->Left = NullNode->Right = NullNode;
-        NullNode->Color = Black;
-        NullNode->Element = 12345;
-    }
- 
-    /* Create the header node */
-    T = (struct RedBlackNode*)memget(sizeof ( struct RedBlackNode));
-    if (T == 0)
-        FatalError("Out of space!!!");
-    T->Element = NegInfinity;
-    T->Left = T->Right = NullNode;
-    T->Color = Black;
- 
-    return T;
+
+RBTree *rbtree_init(int (*rbt_keycmp)(void *, void *))
+{
+	struct RBTree* tree = (struct RBTree*)memget(sizeof(struct RBTree));
+	memset(tree, 0, sizeof(RBTree));
+	tree->rbt_keycmp = rbt_keycmp;
+	return tree;
 }
- 
-/* END */
- 
-static RedBlackTree MakeEmptyRec(RedBlackTree T) {
-    if (T != NullNode) {
-        MakeEmptyRec(T->Left);
-        MakeEmptyRec(T->Right);
-        free(T);
-    }
-    return NullNode;
+
+void _left_rotate(RBTree *tree, struct RBNode *node)
+{
+	struct RBNode *right_child = node->right;
+	struct RBNode *parent = node->parent;
+
+	node->right = right_child->left;
+	if (!IS_NULL(right_child->left))
+		right_child->left->parent = node;
+	right_child->parent = parent;
+	if (IS_NULL(parent))
+		tree->root = right_child;
+	else if (node == parent->left)
+		parent->left = right_child;
+	else
+		parent->right = right_child;
+
+	right_child->left = node;
+	node->parent = right_child;
 }
- 
-RedBlackTree MakeEmpty(RedBlackTree T) {
-    T->Right = MakeEmptyRec(T->Right);
-    return T;
+
+void _right_rotate(RBTree *tree, struct RBNode *node)
+{
+	struct RBNode *left_child = node->left;
+	struct RBNode *parent = node->parent;
+
+	node->left = (left_child == 0) ? 0 : left_child->right;
+	if (!IS_NULL(left_child->right))
+		left_child->right->parent = node;
+	left_child->parent = parent;
+	if (IS_NULL(parent))
+		tree->root = left_child;
+	else if (parent->left == node)
+		parent->left = left_child;
+	else
+		parent->right = left_child;
+
+	left_child->right = node;
+	node->parent = left_child;
 }
- 
-Position Find(ElementType X, RedBlackTree T) {
-    if (T == NullNode)
-        return NullNode;
-    if (X < T->Element)
-        return Find(X, T->Left);
-    else
-        if (X > T->Element)
-        return Find(X, T->Right);
-    else
-        return T;
+
+void _rbtree_insert_fixup(RBTree *tree, struct RBNode *node)
+{
+	struct RBNode *parent = 0;
+	struct RBNode *uncle = 0;
+	struct RBNode *tmp_node = 0;
+	while (IS_RED(node)) {
+		parent = node->parent;
+		if (!IS_RED(parent))
+			break;
+		struct RBNode *grandparent = parent->parent;
+		if (parent == grandparent->left) {
+			uncle = grandparent->right;
+			if (IS_RED(uncle)) {
+				parent->color = BLACK;
+				uncle->color = BLACK;
+				grandparent->color = RED;
+				node = grandparent;
+			} else {
+				if (node == parent->right) {
+					_left_rotate(tree, parent);
+					tmp_node = node;
+					node = parent;
+					parent = tmp_node;
+				} else {
+					parent->color = BLACK;
+					grandparent->color = RED;
+					_right_rotate(tree, grandparent);
+				}
+			}
+		} else {
+			uncle = grandparent->left;
+			if (IS_RED(uncle)) {
+				parent->color = BLACK;
+				uncle->color = BLACK;
+				grandparent->color = RED;
+				node = grandparent;
+			} else {
+				if (node == parent->left) {
+					_right_rotate(tree, parent);
+					tmp_node = node;
+					node = parent;
+					parent = tmp_node;
+				} else {
+					parent->color = BLACK;
+					grandparent->color = RED;
+					_left_rotate(tree, grandparent);
+				}
+			}
+		}
+	}
+
+	tree->root->color = BLACK;
 }
- 
-Position FindMin(RedBlackTree T) {
-    T = T->Right;
-    while (T->Left != NullNode)
-        T = T->Left;
- 
-    return T;
+
+void _do_insert(RBTree *tree, struct RBNode *node)
+{
+	struct RBNode *tmp_node = 0;
+	struct RBNode *walk_node = tree->root;
+	int cmp;
+
+	while (walk_node != 0) {
+		tmp_node = walk_node;
+		cmp = tree->rbt_keycmp(node->key, walk_node->key);
+		walk_node = (cmp < 0) ? walk_node->left : walk_node->right;
+	}
+
+	node->parent = tmp_node;
+	if (IS_NULL(tmp_node))
+		tree->root = node;
+	else if (tree->rbt_keycmp(node->key, tmp_node->key) < 0)
+		tmp_node->left = node;
+	else
+		tmp_node->right = node;
+
+	_rbtree_insert_fixup(tree, node);
 }
- 
-Position FindMax(RedBlackTree T) {
-    while (T->Right != NullNode)
-        T = T->Right;
- 
-    return T;
+
+void rbtree_insert(RBTree *tree, void *key, OS_TCB *value)
+{
+	struct RBNode* new_node = (struct RBNode*)memget(sizeof(struct RBNode));
+	new_node->parent = 0;
+	new_node->key = key;
+	new_node->value = value;
+	new_node->left = 0;
+	new_node->color = RED;
+
+	_do_insert(tree, new_node);
 }
- 
-/* This function can be called only if K2 has a left child */
-/* Perform a rotate between a node (K2) and its left child */
- 
-/* Update heights, then return new root */
- 
-static Position SingleRotateWithLeft(Position K2) {
-    Position K1;
- 
-    K1 = K2->Left;
-    K2->Left = K1->Right;
-    K1->Right = K2;
- 
-    return K1; /* New root */
+
+struct RBNode *_rbtree_minimum(struct RBNode *node)
+{
+	while (node->left) {
+		node = node->left;
+	}
+
+	return node;
 }
- 
-/* This function can be called only if K1 has a right child */
-/* Perform a rotate between a node (K1) and its right child */
- 
-/* Update heights, then return new root */
- 
-static Position SingleRotateWithRight(Position K1) {
-    Position K2;
- 
-    K2 = K1->Right;
-    K1->Right = K2->Left;
-    K2->Left = K1;
- 
-    return K2; /* New root */
+
+void _rbtree_transplant(RBTree *tree, struct RBNode *old_node,
+			struct RBNode *new_node)
+{
+	if (IS_NULL(old_node->parent))
+		tree->root = new_node;
+	else if (old_node == old_node->parent->left)
+		old_node->parent->left = new_node;
+	else
+		old_node->parent->right = new_node;
+
+	if (!IS_NULL(new_node)) {
+		new_node->parent = old_node->parent;
+	}
 }
- 
-/* Perform a rotation at node X */
-/* (whose parent is passed as a parameter) */
- 
-/* The child is deduced by examining Item */
- 
-static Position Rotate(ElementType Item, Position Parent) {
- 
-    if (Item < Parent->Element)
-        return Parent->Left = Item < Parent->Left->Element ?
-            SingleRotateWithLeft(Parent->Left) :
-        SingleRotateWithRight(Parent->Left);
-    else
-        return Parent->Right = Item < Parent->Right->Element ?
-            SingleRotateWithLeft(Parent->Right) :
-        SingleRotateWithRight(Parent->Right);
+
+void _rbtree_delete_fixup(RBTree *tree, struct RBNode *node,
+			  struct RBNode *node_parent, int direction)
+{
+	while (node != tree->root && !IS_RED(node)) {
+		struct RBNode *brother = 0;
+		struct RBNode *parent =
+		    (node == 0) ? node_parent : node->parent;
+		if (node == parent->left || direction == LEFT) {
+			brother = parent->right;
+			if (IS_RED(brother)) {
+				brother->color = BLACK;
+				parent->color = RED;
+				_left_rotate(tree, parent);
+				brother = parent->right;
+			}
+
+			if (!IS_RED(brother->left) && !IS_RED(brother->right)) {
+				brother->color = RED;
+				node =
+				    (node == 0) ? node_parent : node->parent;
+			} else if (!IS_RED(brother->right)) {
+				brother->color = RED;
+				brother->left->color = BLACK;
+				_right_rotate(tree, brother);
+				brother = parent->right;
+			} else {
+				parent->color = BLACK;
+				brother->color = RED;
+				brother->right->color = BLACK;
+				_left_rotate(tree, parent);
+				node = tree->root;
+			}
+		} else {
+			brother = parent->left;
+
+			if (IS_RED(brother)) {
+				brother->color = BLACK;
+				parent->color = RED;
+				_right_rotate(tree, parent);
+				brother = parent->left;
+			}
+
+			if (!IS_RED(brother->right) && !IS_RED(brother->left)) {
+				brother->color = RED;
+				node =
+				    (node == 0) ? node_parent : node->parent;
+			} else if (!IS_RED(brother->left)) {
+				brother->color = RED;
+				brother->right->color = BLACK;
+				_left_rotate(tree, brother);
+				brother = parent->left;
+			} else {
+				parent->color = BLACK;
+				brother->color = RED;
+				brother->left->color = BLACK;
+				_right_rotate(tree, parent);
+				node = tree->root;
+			}
+		}
+	}
+
+	if (!IS_NULL(node))
+		node->color = BLACK;
 }
- 
-static Position X, P, GP, GGP;
- 
-static void HandleReorient(ElementType Item, RedBlackTree T) {
-    X->Color = Red; /* Do the color flip */
-    X->Left->Color = Black;
-    X->Right->Color = Black;
- 
-    if (P->Color == Red) /* Have to rotate */ {
-        GP->Color = Red;
-        if ((Item < GP->Element) != (Item < P->Element))
-            P = Rotate(Item, GP); /* Start double rotate */
-        X = Rotate(Item, GGP);
-        X->Color = Black;
-    }
-    T->Right->Color = Black; /* Make root black */
+
+void _do_delete(RBTree *tree, struct RBNode *node)
+{
+	struct RBNode *walk_node = node;
+	int tmp_color = walk_node->color;
+	struct RBNode *need_fixup_node = 0;
+	struct RBNode *need_fixup_node_parent = 0;
+	int direction = 0;
+
+	if (IS_NULL(node->left)) {
+		need_fixup_node = node->right;
+		need_fixup_node_parent =
+		    IS_NULL(need_fixup_node) ? node->parent : node;
+		direction = RIGHT;
+		_rbtree_transplant(tree, node, need_fixup_node);
+		if (IS_NULL(need_fixup_node))
+			need_fixup_node_parent = node->parent;
+	} else if (IS_NULL(node->right)) {
+		need_fixup_node = node->left;
+		need_fixup_node_parent = node;
+		direction = LEFT;
+		_rbtree_transplant(tree, node, need_fixup_node);
+	} else {
+		walk_node = _rbtree_minimum(node->right);
+		tmp_color = walk_node->color;
+		need_fixup_node = walk_node->right;
+		need_fixup_node_parent = walk_node;
+		direction = RIGHT;
+		if (walk_node->parent != node) {
+			struct RBNode *tmp_node = walk_node->right;
+			_rbtree_transplant(tree, walk_node, tmp_node);
+			if (IS_NULL(need_fixup_node))
+				need_fixup_node_parent = walk_node->parent;
+			walk_node->right = node->right;
+			walk_node->right->parent = walk_node;
+		}
+		_rbtree_transplant(tree, node, walk_node);
+		walk_node->left = node->left;
+		walk_node->left->parent = walk_node;
+		walk_node->color = node->color;
+	}
+	if (tmp_color == BLACK)
+		_rbtree_delete_fixup(tree, need_fixup_node,
+				     need_fixup_node_parent, direction);
+	free(node);
 }
- 
-RedBlackTree Insert(ElementType Item, RedBlackTree T) {
-    X = P = GP = T;
-    NullNode->Element = Item;
-    while (X->Element != Item) /* Descend down the tree */ {
-        GGP = GP;
-        GP = P;
-        P = X;
-        if (Item < X->Element)
-            X = X->Left;
-        else
-            X = X->Right;
-        if (X->Left->Color == Red && X->Right->Color == Red)
-            HandleReorient(Item, T);
-    }
- 
-    if (X != NullNode)
-        return NullNode; /* Duplicate */
- 
-    X = (struct RedBlackNode*)memget(sizeof ( struct RedBlackNode));
-    if (X == 0)
-        FatalError("Out of space!!!");
-    X->Element = Item;
-    X->Left = X->Right = NullNode;
- 
-    if (Item < P->Element) /* Attach to its parent */
-        P->Left = X;
-    else
-        P->Right = X;
-    HandleReorient(Item, T); /* Color it red; maybe rotate */
- 
-    return T;
-}
- 
-RedBlackTree Remove(ElementType Item, RedBlackTree T) {
-    printf("Remove is unimplemented\n");
-    if (Item)
-        return T;
-    return T;
-}
- 
-ElementType Retrieve(Position P) {
-    return P->Element;
+
+void *rbtree_del(RBTree *tree, void *key)
+{
+	struct RBNode *tmp_node = tree->root;
+	int cmp = 0;
+	while (!IS_NULL(tmp_node)) {
+		cmp = tree->rbt_keycmp(key, tmp_node->key);
+		if (cmp > 0)
+			tmp_node = tmp_node->right;
+		else if (cmp < 0)
+			tmp_node = tmp_node->left;
+		else {
+			_do_delete(tree, tmp_node);
+			return key;
+		}
+	}
+
+	return 0;
 }

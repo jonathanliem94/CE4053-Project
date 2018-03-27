@@ -1,23 +1,29 @@
 #include <os.h>
- 
-typedef int ElementType;
-#define NegInfinity (-10000)
- 
-#ifndef _RedBlack_H
-#define _RedBlack_H
- 
-struct RedBlackNode;
-typedef struct RedBlackNode *Position;
-typedef struct RedBlackNode *RedBlackTree;
- 
-RedBlackTree MakeEmpty(RedBlackTree T);
-Position Find(ElementType X, RedBlackTree T);
-Position FindMin(RedBlackTree T);
-Position FindMax(RedBlackTree T);
-RedBlackTree Initialize(void);
-RedBlackTree Insert(ElementType X, RedBlackTree T);
-RedBlackTree Remove(ElementType X, RedBlackTree T);
-ElementType Retrieve(Position P);
-void PrintTree(RedBlackTree T);
- 
-#endif  /* _RedBlack_H */
+
+#define RED 1
+#define BLACK 0
+
+#define LEFT 1
+#define RIGHT 2
+
+#define IS_NULL(node) ((node) == 0)
+#define IS_RED(node) ((node) != 0 && (node)->color == RED)
+
+typedef struct RBNode {
+	struct RBNode *parent;
+	void *key;
+	OS_TCB *value;
+	struct RBNode *left;
+	struct RBNode *right;
+	int color;
+} RBNode;
+
+typedef struct RBTree {
+	struct RBNode *root;
+	int (*rbt_keycmp)(void *, void *);
+} RBTree;
+
+RBTree *rbtree_init(int (*rbt_keycmp)(void *, void *));
+void rbtree_insert(RBTree *tree, void *key, OS_TCB *value);
+void *rbtree_del(RBTree *tree, void *key);
+struct RBNode *_rbtree_minimum(struct RBNode *node);

@@ -204,14 +204,17 @@ static  void  AppTaskStart (void  *p_arg)
     
     /* Create Mutexes */
     OSMutexCreate((OS_MUTEX *)&MutexOne, 
-                  (CPU_CHAR *)2, 
-                  (OS_ERR *)&err,1);
+                  (CPU_CHAR *)2,
+                  (OS_TCB  *)&AppTaskOneTCB,
+                  (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)3, 
-                  (OS_ERR *)&err,2);
+                  (OS_TCB  *)&AppTaskOneTCB,
+                  (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_ERR *)&err,3);
+                  (OS_TCB  *)&AppTaskOneTCB,
+                  (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
     OSTaskCreate((OS_TCB     *)&AppTaskOneTCB, 

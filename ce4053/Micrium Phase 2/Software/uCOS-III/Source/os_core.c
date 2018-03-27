@@ -33,10 +33,20 @@
 #include  <os.h>
 #include  <heap.h>
 #include  <avltree.h>
+#include  <stack.h>
+#include  <redblack.h>
 struct avl_tree OS_AVL_TREE;
+OS_DEADLINE OS_SYSTEM_CEILING;
+struct stack_node OS_MUTEX_STACK_HEAD;
+struct RBTree* OS_BLOCKED_RDY_TREE;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_core__c = "$Id: $";
 #endif
+
+
+int my_cmp_cb (void *a, void *b) {
+    return (a > b) - (a < b);
+}
 
 /*
 ************************************************************************************************************************
@@ -59,8 +69,10 @@ void  OSInit (OS_ERR  *p_err)
     CPU_STK_SIZE  size;
     struct heap h;		
     heap_init(&h);
-
-
+    OS_SYSTEM_CEILING = 0;
+    stack_init(&OS_MUTEX_STACK_HEAD);
+    OS_BLOCKED_RDY_TREE = rbtree_init(my_cmp_cb);
+    
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {
         OS_SAFETY_CRITICAL_EXCEPTION();
@@ -380,25 +392,39 @@ void  OSSched (void)
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
     
-        
-    /* Search for node with smallest deadline greater than 3, and get tcb  & priority*/
-    if (OS_AVL_TREE.root != 0)
+    /* if more than 3, means non internal task, i.e. recursive tasks */
+    if (OSPrioHighRdy > 3)
     {
       query.deadline=0;
-      cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
-      node = _get_entry(cur, struct os_avl_node, avl);
-      tree_smallest = node->p_tcb;
-      tree_prio = node->p_tcb->Prio;
-      /* Compare AVL tree and original */
-      /* if more than 3, means non internal task, i.e. recursive tasks */
-      if (OSPrioHighRdy > 3)
+      while (OS_AVL_TREE.root != 0)
       {
-        OSPrioHighRdy = tree_prio;
-        OSTCBHighRdyPtr = tree_smallest;
+        cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
+        node = _get_entry(cur, struct os_avl_node, avl);
+        tree_smallest = node->p_tcb;
+        tree_prio = node->p_tcb->Prio;
+        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
+        {                                      
+          OSPrioHighRdy = tree_prio;
+          OSTCBHighRdyPtr = tree_smallest;
+          break;
+        }
+        else if (OSTCBHighRdyPtr == OSTCBCurPtr)
+        {
+          OSPrioHighRdy = tree_prio;
+          OSTCBHighRdyPtr = tree_smallest;
+          break;
+        }
+        else
+        {
+          /* remove node with this tcb from AVL tree and add to RB tree, ie. block it */
+          query.deadline=tree_smallest->Deadline;
+          cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+          avl_remove(&OS_AVL_TREE, cur);
+          rbtree_insert(OS_BLOCKED_RDY_TREE, &tree_smallest->Deadline, tree_smallest);
+        }
       }
     }
 
-    
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
         CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
         return;
