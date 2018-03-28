@@ -85,12 +85,19 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   if (OSTickCtr == 5) {
     //  iterate through heap (size 5) 
     //  add them all into readylist at one go
-    for (int k = 0; k < 5; k++) 
+    for (int k = 0; k < 3; k++) 
     {
       p_tcb = OS_REC_HEAP.node_arr[k]->p_tcb;
 	
       CPU_SR_ALLOC(); 		      
-      
+      /*insert into AVL tree as well */
+      //    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
+      new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
+      new_avl_nodeArr[avl_count].p_tcb = p_tcb;
+      avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+      avl_count++;
+      if (avl_count == 200)
+        avl_count=0;
       //      OS_CRITICAL_ENTER();		        //      will break robot if enabled
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);
@@ -106,7 +113,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-    syncRelease = 1;
+//    syncRelease = 1;
   }
 //******************************        if no longer at the start       *****************************************************************************************
 //******************************   

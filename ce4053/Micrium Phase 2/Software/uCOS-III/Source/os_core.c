@@ -37,8 +37,11 @@
 #include  <redblack.h>
 struct avl_tree OS_AVL_TREE;
 OS_DEADLINE OS_SYSTEM_CEILING;
-//struct stack_node OS_MUTEX_STACK_HEAD;
-struct RBTree* OS_BLOCKED_RDY_TREE;
+struct stack_node* OS_MUTEX_STACK_HEAD;
+struct RBTree OS_BLOCKED_RDY_TREE;
+struct stack_node STACK_NODE_ARR[200];
+struct RBNode RB_NODE_ARR[200];
+CPU_INT16U rb_count = 0;
 #ifdef VSC_INCLUDE_SOURCE_FILE_NAMES
 const  CPU_CHAR  *os_core__c = "$Id: $";
 #endif
@@ -69,10 +72,11 @@ void  OSInit (OS_ERR  *p_err)
     CPU_STK_SIZE  size;
     struct heap h;		
     heap_init(&h);
-    OS_SYSTEM_CEILING = 0;
-    struct stack_node OS_MUTEX_STACK_HEAD;
-    stack_init(&OS_MUTEX_STACK_HEAD);
-    OS_BLOCKED_RDY_TREE = rbtree_init(my_cmp_cb);
+    OS_SYSTEM_CEILING = 99999999;
+    stack_init(OS_MUTEX_STACK_HEAD);
+//    rbtree_init(OS_BLOCKED_RDY_TREE, my_cmp_cb);
+//    OS_BLOCKED_RDY_TREE->rbt_keycmp=my_cmp_cb;
+    
     
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {
@@ -379,66 +383,76 @@ void  OSSched (void)
     struct os_avl_node *node, query;
     CPU_SR_ALLOC();
     
-    if (syncRelease == 1) {
-      if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* ISRs still nested?                                     */
-        return;                                             /* Yes ... only schedule when no nested ISRs              */
-      }
-      
-      if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {        /* Scheduler locked?                                      */
-        return;                                             /* Yes                                                    */
-      }
-      
-      CPU_INT_DIS();
-      
-      OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
-      OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
-      
-      /* if more than 3, means non internal task, i.e. recursive tasks */
-      if (OSPrioHighRdy > 3)
+    
+    if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* ISRs still nested?                                     */
+      return;                                             /* Yes ... only schedule when no nested ISRs              */
+    }
+    
+    if (OSSchedLockNestingCtr > (OS_NESTING_CTR)0) {        /* Scheduler locked?                                      */
+      return;                                             /* Yes                                                    */
+    }
+    
+    CPU_INT_DIS();
+    
+    OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
+    OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
+    
+    /* if more than 4, means non internal task, i.e. recursive tasks */
+    if (OSPrioHighRdy > 4)
+    {
+      query.deadline=0;
+      while (OS_AVL_TREE.root != 0)
       {
-        query.deadline=0;
-        while (OS_AVL_TREE.root != 0)
+        cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
+        node = _get_entry(cur, struct os_avl_node, avl);
+        tree_smallest = node->p_tcb;
+        tree_prio = node->p_tcb->Prio;
+        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
+        {                                      
+          OSPrioHighRdy = tree_prio;
+          OSTCBHighRdyPtr = tree_smallest;
+          break;
+        }
+        else if (OSTCBHighRdyPtr == OSTCBCurPtr)
         {
-          cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
-          node = _get_entry(cur, struct os_avl_node, avl);
-          tree_smallest = node->p_tcb;
-          tree_prio = node->p_tcb->Prio;
-          if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
-          {                                      
-            OSPrioHighRdy = tree_prio;
-            OSTCBHighRdyPtr = tree_smallest;
-            break;
-          }
-          else if (OSTCBHighRdyPtr == OSTCBCurPtr)
-          {
-            OSPrioHighRdy = tree_prio;
-            OSTCBHighRdyPtr = tree_smallest;
-            break;
-          }
-          else
-          {
-            /* remove node with this tcb from AVL tree and add to RB tree, ie. block it */
-            query.deadline=tree_smallest->Deadline;
-            cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-            avl_remove(&OS_AVL_TREE, cur);
-            rbtree_insert(OS_BLOCKED_RDY_TREE, &tree_smallest->Deadline, tree_smallest);
-          }
+          break;
+        }
+        else if (OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr = tree_smallest)
+        {
+          OSPrioHighRdy = tree_prio;
+          OSTCBHighRdyPtr = tree_smallest;
+          break;
+        }
+        else{
+          /* remove node with this tcb from AVL tree and add to RB tree, ie. block it */
+          query.deadline=tree_smallest->Deadline;
+          cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+          avl_remove(&OS_AVL_TREE, cur);
+          RB_NODE_ARR[rb_count].parent = 0;
+          RB_NODE_ARR[rb_count].key = (void *)tree_smallest->Deadline;
+          RB_NODE_ARR[rb_count].value = tree_smallest;
+          RB_NODE_ARR[rb_count].left = 0;
+          RB_NODE_ARR[rb_count].color = RED;
+          rbtree_insert(&OS_BLOCKED_RDY_TREE, &RB_NODE_ARR[rb_count]);
+          rb_count++;
+          if (rb_count == 200)
+            rb_count=0;
         }
       }
-      
-      if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
-        CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
-        return;
-      }
-      
-#if OS_CFG_TASK_PROFILE_EN > 0u
-      OSTCBHighRdyPtr->CtxSwCtr++;                            /* Inc. # of context switches to this task                */
-#endif
-      OSTaskCtxSwCtr++;                                       /* Increment context switch counter                       */
-      
-      OS_TASK_SW();                                           /* Perform a task level context switch                    */
-      CPU_INT_EN();
     }
+    
+    if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
+      CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
+      return;
+    }
+    
+#if OS_CFG_TASK_PROFILE_EN > 0u
+    OSTCBHighRdyPtr->CtxSwCtr++;                            /* Inc. # of context switches to this task                */
+#endif
+    OSTaskCtxSwCtr++;                                       /* Increment context switch counter                       */
+    
+    OS_TASK_SW();                                           /* Perform a task level context switch                    */
+    CPU_INT_EN();
 }
 
 /*$PAGE*/

@@ -1,11 +1,19 @@
-#include "redblack.h"
+#include <redblack.h>
 
-RBTree *rbtree_init(int (*rbt_keycmp)(void *, void *))
+void rbtree_init(RBTree*  tree, int (*rbt_keycmp)(void *, void *))
 {
-	struct RBTree* tree = (struct RBTree*)memget(sizeof(struct RBTree));
-	memset(tree, 0, sizeof(RBTree));
-	tree->rbt_keycmp = rbt_keycmp;
-	return tree;
+//	struct RBTree* tree = (struct RBTree*)OSMemGet(sizeof(struct RBTree));
+//	memset(tree, 0, sizeof(RBTree));
+  
+//  tree = (struct RBTree){
+//    .rbt_keycmp = rbt_keycmp,
+//    .root = 0,
+    tree->rbt_keycmp = rbt_keycmp;
+    tree->root = 0;
+//  };
+//  tree->root =0;
+//  tree->rbt_keycmp = rbt_keycmp;
+//  return tree;
 }
 
 void _left_rotate(RBTree *tree, struct RBNode *node)
@@ -125,14 +133,14 @@ void _do_insert(RBTree *tree, struct RBNode *node)
 	_rbtree_insert_fixup(tree, node);
 }
 
-void rbtree_insert(RBTree *tree, void *key, OS_TCB *value)
+void rbtree_insert(RBTree *tree, RBNode *new_node)
 {
-	struct RBNode* new_node = (struct RBNode*)memget(sizeof(struct RBNode));
-	new_node->parent = 0;
-	new_node->key = key;
-	new_node->value = value;
-	new_node->left = 0;
-	new_node->color = RED;
+//	struct RBNode* new_node = (struct RBNode*)memget(sizeof(struct RBNode));
+//	new_node->parent = 0;
+//	new_node->key = key;
+//	new_node->value = value;
+//	new_node->left = 0;
+//	new_node->color = RED;
 
 	_do_insert(tree, new_node);
 }

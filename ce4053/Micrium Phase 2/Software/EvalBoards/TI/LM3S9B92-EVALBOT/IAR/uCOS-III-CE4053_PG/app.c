@@ -205,7 +205,7 @@ static  void  AppTaskStart (void  *p_arg)
     /* Create Mutexes */
     OSMutexCreate((OS_MUTEX *)&MutexOne, 
                   (CPU_CHAR *)2,
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex one --> AppTaskOne use mutex one meh??
+                  (OS_TCB  *)0,    //      resource ceiling for mutex one --> AppTaskOne use mutex one meh??
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)3, 
@@ -217,12 +217,12 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
-    OSTaskCreate((OS_TCB     *)&AppTaskOneTCB, 
+    OSRecTaskCreate((OS_TCB     *)&AppTaskOneTCB, 
                  (CPU_CHAR   *)"App Task One", 
                  (OS_TASK_PTR ) AppTaskOne, 
                  (void       *) 0, 
-                 (OS_PERIOD   ) 3,
                  (OS_PRIO     ) APP_TASK_ONE_PRIO, 
+                 (OS_PERIOD   ) 3000,
                  (CPU_STK    *)&AppTaskOneStk[0], 
                  (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE, 
@@ -232,12 +232,12 @@ static  void  AppTaskStart (void  *p_arg)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                  (OS_ERR     *)&err);
     
-    OSTaskCreate((OS_TCB     *)&AppTaskTwoTCB, 
+    OSRecTaskCreate((OS_TCB     *)&AppTaskTwoTCB, 
                  (CPU_CHAR   *)"App Task Two", 
                  (OS_TASK_PTR ) AppTaskTwo, 
                  (void       *) 0, 
-                 (OS_PERIOD   ) 4,
                  (OS_PRIO     ) APP_TASK_TWO_PRIO, 
+                 (OS_PERIOD   ) 4000,
                  (CPU_STK    *)&AppTaskTwoStk[0], 
                  (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, 
@@ -247,12 +247,12 @@ static  void  AppTaskStart (void  *p_arg)
                  (OS_OPT      )(OS_OPT_TASK_STK_CHK | OS_OPT_TASK_STK_CLR), 
                  (OS_ERR     *)&err);
     
-    OSTaskCreate((OS_TCB     *)&AppTaskThreeTCB, 
+    OSRecTaskCreate((OS_TCB     *)&AppTaskThreeTCB, 
                  (CPU_CHAR   *)"App Task Three", 
                  (OS_TASK_PTR ) AppTaskThree, 
                  (void       *) 0, 
-                 (OS_PERIOD   ) 5,
                  (OS_PRIO     ) APP_TASK_THREE_PRIO, 
+                 (OS_PERIOD   ) 5000,
                  (CPU_STK    *)&AppTaskThreeStk[0], 
                  (CPU_STK_SIZE) APP_TASK_THREE_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_THREE_STK_SIZE, 
@@ -296,7 +296,7 @@ static  void  AppTaskOne (void  *p_arg)
     OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
         
     //printf("\nT1");
-    OSTaskDel((OS_TCB *)0, &err);
+    OSRecTaskDelete((OS_TCB *)0, &err);
 }
 
 static  void  AppTaskTwo (void  *p_arg)
@@ -321,7 +321,7 @@ static  void  AppTaskTwo (void  *p_arg)
     OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
 
     //printf("\nT2");
-    OSTaskDel((OS_TCB *)0, &err);
+    OSRecTaskDelete((OS_TCB *)0, &err);
 }
 
 static  void  AppTaskThree (void  *p_arg)
@@ -342,7 +342,7 @@ static  void  AppTaskThree (void  *p_arg)
          j = ((i * 2) + j);
     }
     
-    OSTaskDel((OS_TCB *)0, &err);
+    OSRecTaskDelete((OS_TCB *)0, &err);
 }
 
 

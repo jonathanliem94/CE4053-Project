@@ -9,7 +9,7 @@ struct heap
 {
 	unsigned int size; // Size of the allocated memory (in number of items)
 	unsigned int count; // Count of the elements in the heap
-	struct node *node_arr[5]; // Array with the elements
+	struct node *node_arr[3]; // Array with the elements
 };
 void heap_init(struct heap *h);
 void heap_push(struct heap *h, struct node *node_arr);

@@ -543,8 +543,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     p_tcb->TaskEntryAddr = p_task;                          /* Save task entry point address                          */		
     p_tcb->TaskEntryArg  = p_arg;                           /* Save task entry argument                               */		
     p_tcb->NamePtr       = p_name;                          /* Save task name                                         */		
-        p_tcb->Prio          = prio;                            /* for normal recursion                             */		
-//    p_tcb->Prio          = ((period/1000)*(OS_CFG_PRIO_MAX-4)/120)+4;      //      for RM scheduling
+    p_tcb->Prio          = prio;                            /* for normal recursion                             */		
     p_tcb->StkPtr        = p_sp;                            /* Save the new top-of-stack pointer                      */		
     p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */		
     p_tcb->Period        = period;
@@ -586,14 +585,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     
     //  followed by pushing it into a heap
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
-    /*insert into AVL tree as well */
-//    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
-    new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
-    new_avl_nodeArr[avl_count].p_tcb = p_tcb;
-    avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
-    avl_count++;
-    if (avl_count == 200)
-      avl_count=0;
+
     
 //        OSTaskCreateHook(p_tcb);                                /* Call user defined hook                                 */
 //

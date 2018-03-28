@@ -11,27 +11,33 @@ void stack_init(struct stack_node* head)
 /*
     push an element into stack
 */
-struct stack_node* stack_push(struct stack_node* head,OS_MUTEX* data)
+struct stack_node* stack_push(struct stack_node* head,struct stack_node* node_to_be_inserted)
 {
-    struct stack_node* tmp = (struct stack_node*)memget(sizeof(struct stack_node));
-    if(tmp == 0)
-    {
-        exit(0);
-    }
-    tmp->data = data;
-    tmp->next = head;
-    head = tmp;
-    return head;
+//    struct stack_node* tmp = (struct stack_node*)memget(sizeof(struct stack_node));
+//    if(node_to_be_inserted == 0)
+//    {
+//        exit(0);
+////    }
+//    tmp->data = data;
+  if (head==0)
+  {
+    head = node_to_be_inserted;
+  }
+  else
+  {
+    node_to_be_inserted->next = head;
+    head = node_to_be_inserted;
+  }
+   return head;
 }
 /*
     pop an element from the stack
 */
-struct stack_node* stack_pop(struct stack_node *head,OS_MUTEX *element)
+struct stack_node* stack_pop(struct stack_node *head)
 {
-    struct stack_node* tmp = head;
-    element = head->data;
+
     head = head->next;
-    free(tmp);
+//    free(tmp);
     return head;
 }
 
@@ -46,9 +52,13 @@ OS_DEADLINE stack_find_min_deadline(struct stack_node *head)
     while head is not null we check its deadline value (since each node has Mutex data to check TCB deadline value)
     
   */
+  if(cur==0)
+  {
+    return 99999999;
+  }
   while (cur->next != 0){
     cur = cur->next;
-    if (deadline > cur->data->Resource_Ceiling->Deadline) {
+    if (cur->data->Resource_Ceiling->Deadline < deadline) {
       deadline = cur->data->Resource_Ceiling->Deadline;
     }
   }

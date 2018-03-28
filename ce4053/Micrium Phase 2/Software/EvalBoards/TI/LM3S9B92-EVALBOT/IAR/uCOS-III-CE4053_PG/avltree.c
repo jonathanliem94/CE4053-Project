@@ -155,7 +155,7 @@ INLINE struct avl_node* _rotate_LR(struct avl_node *parent, int parent_bf)
         child_bf = avl_bf(child);
     }
 
-    ret = _rotate_LL(parent, parent_bf-height_delta, &child_bf, NULL);
+    ret = _rotate_LL(parent, parent_bf-height_delta, &child_bf, 0);
     avl_set_bf(ret, child_bf);
     return ret;
 }
@@ -173,7 +173,7 @@ INLINE struct avl_node* _rotate_RL(struct avl_node *parent, int parent_bf)
         child_bf = avl_bf(child);
     }
 
-    ret = _rotate_RR(parent, parent_bf+height_delta, &child_bf, NULL);
+    ret = _rotate_RR(parent, parent_bf+height_delta, &child_bf, 0);
     avl_set_bf(ret, child_bf);
     return ret;
 }
@@ -192,7 +192,7 @@ static struct avl_node* _balance_tree(struct avl_node *node, int bf)
             // balance left sub tree
             if(_get_balance(node->left) <= 0) {
                 child_bf = avl_bf(node->left);
-                node = _rotate_LL(node, height_diff, &child_bf, NULL);
+                node = _rotate_LL(node, height_diff, &child_bf, 0);
                 avl_set_bf(node, child_bf);
             } else {
                 node = _rotate_LR(node, height_diff);
@@ -201,7 +201,7 @@ static struct avl_node* _balance_tree(struct avl_node *node, int bf)
             // balance right sub tree
             if(_get_balance(node->right) >= 0) {
                 child_bf = avl_bf(node->right);
-                node = _rotate_RR(node, height_diff, &child_bf, NULL);
+                node = _rotate_RR(node, height_diff, &child_bf, 0);
                 avl_set_bf(node, child_bf);
             } else {
                 node = _rotate_RL(node, height_diff);
@@ -218,7 +218,7 @@ static struct avl_node* _balance_tree(struct avl_node *node, int bf)
 
 struct avl_node* avl_first(struct avl_tree *tree)
 {
-    struct avl_node *p = NULL;
+    struct avl_node *p = 0;
     struct avl_node *node = tree->root;
 
     while(node) {
@@ -230,7 +230,7 @@ struct avl_node* avl_first(struct avl_tree *tree)
 
 struct avl_node* avl_last(struct avl_tree *tree)
 {
-    struct avl_node *p = NULL;
+    struct avl_node *p = 0;
     struct avl_node *node = tree->root;
 
     while(node) {
@@ -242,7 +242,7 @@ struct avl_node* avl_last(struct avl_tree *tree)
 
 struct avl_node* avl_next(struct avl_node *node)
 {
-    if (node == NULL) return NULL;
+    if (node == 0) return 0;
 
 #ifdef _AVL_NEXT_POINTER
     return node->next;
@@ -275,12 +275,12 @@ struct avl_node* avl_next(struct avl_node *node)
         }
     }
 #endif
-    return NULL;
+    return 0;
 }
 
 struct avl_node* avl_prev(struct avl_node *node)
 {
-    if (node == NULL) return NULL;
+    if (node == 0) return 0;
 
 #ifdef _AVL_NEXT_POINTER
     return node->prev;
@@ -313,7 +313,7 @@ struct avl_node* avl_prev(struct avl_node *node)
         }
     }
 #endif
-    return NULL;
+    return 0;
 }
 
 struct avl_node* avl_search(struct avl_tree *tree,
@@ -337,7 +337,7 @@ struct avl_node* avl_search(struct avl_tree *tree,
         }
     }
     // search fail
-    return NULL;
+    return 0;
 }
 
 struct avl_node* avl_search_greater(struct avl_tree *tree,
@@ -347,7 +347,7 @@ struct avl_node* avl_search_greater(struct avl_tree *tree,
 // return smallest node greater than NODE
 {
     struct avl_node *p = tree->root;
-    struct avl_node *pp = NULL;
+    struct avl_node *pp = 0;
     int cmp;
 
     while(p)
@@ -384,7 +384,7 @@ struct avl_node* avl_search_smaller(struct avl_tree *tree,
 // return greatest node smaller than NODE
 {
     struct avl_node *p = tree->root;
-    struct avl_node *pp = NULL;
+    struct avl_node *pp = 0;
     int cmp;
 
     while(p)
@@ -416,7 +416,7 @@ struct avl_node* avl_search_smaller(struct avl_tree *tree,
 
 void avl_init(struct avl_tree *tree, void *aux)
 {
-    tree->root = NULL;
+    tree->root = 0;
     tree->aux = aux;
 }
 
@@ -432,7 +432,7 @@ struct avl_node* avl_insert(struct avl_tree *tree,
     __AVL_DEBUG_INSERT(node);
 
     struct avl_node *node_original = node;
-    struct avl_node *p=NULL,*cur;
+    struct avl_node *p=0,*cur;
     int cmp, bf, bf_old;
 
     cur = tree->root;
@@ -453,9 +453,9 @@ struct avl_node* avl_insert(struct avl_tree *tree,
 
     avl_set_parent(node, p);
     avl_set_bf(node, 0);
-    node->left = node->right = NULL;
+    node->left = node->right = 0;
 #ifdef _AVL_NEXT_POINTER
-    node->prev = node->next = NULL;
+    node->prev = node->next = 0;
 #endif
 
     // P is parent node of CUR
@@ -502,7 +502,7 @@ struct avl_node* avl_insert(struct avl_tree *tree,
             }
 
             // calculate balance facter BF for parent
-            if (node->left == NULL && node->right == NULL) {
+            if (node->left == 0 && node->right == 0) {
                 // leaf node
                 if (p->left == node) bf = -1;
                 else bf = 1;
@@ -537,10 +537,10 @@ void avl_remove(struct avl_tree *tree,
     __AVL_DEBUG_REMOVE(node);
 
     // not found
-    if (node == NULL) return;
+    if (node == 0) return;
 
     struct avl_tree right_subtree;
-    struct avl_node *p=NULL,*cur, *next=NULL;
+    struct avl_node *p=0,*cur, *next=0;
     int bf = 0, bf_old;
 
 
@@ -613,7 +613,7 @@ void avl_remove(struct avl_tree *tree,
     // reset root
     if (tree->root == node) {
         tree->root = next;
-        if (next == NULL) {
+        if (next == 0) {
             if (node->left) tree->root = node->left;
         }
     }
@@ -634,7 +634,7 @@ void avl_remove(struct avl_tree *tree,
             }
 
             // calculate balance facter BF for parent
-            if (cur->left == NULL && cur->right == NULL) {
+            if (cur->left == 0 && cur->right == 0) {
                 // leaf node
                 if (p->left == cur) bf = 1;
                 else bf = -1;
