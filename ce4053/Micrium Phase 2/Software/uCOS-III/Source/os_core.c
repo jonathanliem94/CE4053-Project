@@ -417,13 +417,13 @@ void  OSSched (void)
         {
           break;
         }
-        else if (OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr = tree_smallest)
+        else if ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == tree_smallest))
         {
           OSPrioHighRdy = tree_prio;
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
-        else{
+        else{  
           /* remove node with this tcb from AVL tree and add to RB tree, ie. block it */
           query.deadline=tree_smallest->Deadline;
           cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);

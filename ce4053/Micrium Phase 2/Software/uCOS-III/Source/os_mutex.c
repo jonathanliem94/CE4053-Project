@@ -412,7 +412,7 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         //  then we need to check through the stack to find min deadline
         //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
         OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
-        
+//        OS_SYSTEM_CEILING = 3000;
         
         if (p_ts != (CPU_TS *)0) {
            *p_ts                   = p_mutex->TS;
@@ -715,12 +715,12 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     if (OS_BLOCKED_RDY_TREE.root != 0)
     {
       struct RBNode* cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
-      while ((cur->value->Deadline < OS_SYSTEM_CEILING) || (cur!=0))
+      while ((cur->value->Deadline < OS_SYSTEM_CEILING) && (cur!=0))
       {
-        new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
-        new_avl_nodeArr[avl_count].p_tcb = p_tcb;
-        avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+        new_avl_nodeArr[avl_count].deadline = cur->value->Deadline;
+        new_avl_nodeArr[avl_count].p_tcb = cur->value;
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
+        avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
         cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
         avl_count++;
         if (avl_count == 200)

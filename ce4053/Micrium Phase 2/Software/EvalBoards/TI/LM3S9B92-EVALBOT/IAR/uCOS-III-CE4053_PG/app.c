@@ -45,9 +45,9 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   5
-#define TASK2PERIOD                   5
-#define TASK3PERIOD                   10
+#define TASK1PERIOD                   5000
+#define TASK2PERIOD                   7000
+#define TASK3PERIOD                   11000
 
 #define WORKLOAD1                    2
 #define WORKLOAD2                    2
@@ -222,7 +222,7 @@ static  void  AppTaskStart (void  *p_arg)
                  (OS_TASK_PTR ) AppTaskOne, 
                  (void       *) 0, 
                  (OS_PRIO     ) APP_TASK_ONE_PRIO, 
-                 (OS_PERIOD   ) 3000,
+                 (OS_PERIOD   ) TASK1PERIOD,
                  (CPU_STK    *)&AppTaskOneStk[0], 
                  (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_ONE_STK_SIZE, 
@@ -237,7 +237,7 @@ static  void  AppTaskStart (void  *p_arg)
                  (OS_TASK_PTR ) AppTaskTwo, 
                  (void       *) 0, 
                  (OS_PRIO     ) APP_TASK_TWO_PRIO, 
-                 (OS_PERIOD   ) 4000,
+                 (OS_PERIOD   ) TASK2PERIOD,
                  (CPU_STK    *)&AppTaskTwoStk[0], 
                  (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_TWO_STK_SIZE, 
@@ -252,7 +252,7 @@ static  void  AppTaskStart (void  *p_arg)
                  (OS_TASK_PTR ) AppTaskThree, 
                  (void       *) 0, 
                  (OS_PRIO     ) APP_TASK_THREE_PRIO, 
-                 (OS_PERIOD   ) 5000,
+                 (OS_PERIOD   ) TASK3PERIOD,
                  (CPU_STK    *)&AppTaskThreeStk[0], 
                  (CPU_STK_SIZE) APP_TASK_THREE_STK_SIZE / 10u, 
                  (CPU_STK_SIZE) APP_TASK_THREE_STK_SIZE, 

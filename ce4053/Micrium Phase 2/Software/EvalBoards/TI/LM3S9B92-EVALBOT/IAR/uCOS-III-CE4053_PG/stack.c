@@ -44,22 +44,25 @@ struct stack_node* stack_pop(struct stack_node *head)
 /*   find min deadlines of all mutexes stored inside stack */
 OS_DEADLINE stack_find_min_deadline(struct stack_node *head)
 {
-  OS_DEADLINE deadline = 0;
+  OS_DEADLINE deadline = 99999999;
   struct stack_node* cur = head;
-  deadline = cur->data->Resource_Ceiling->Deadline;
+  
   /*    node is given
     we iterate through each by having current pointer = head
     while head is not null we check its deadline value (since each node has Mutex data to check TCB deadline value)
     
   */
-  if(cur==0)
+  if(cur==0)    //      nothing in mutex
   {
     return 99999999;
   }
-  while (cur->next != 0){
-    cur = cur->next;
-    if (cur->data->Resource_Ceiling->Deadline < deadline) {
-      deadline = cur->data->Resource_Ceiling->Deadline;
+  else {        //      something in mutex
+    deadline = cur->data->Resource_Ceiling->Deadline;
+    while (cur != 0){
+      if (cur->data->Resource_Ceiling->Deadline < deadline) {
+        deadline = cur->data->Resource_Ceiling->Deadline;
+      }
+      cur = cur->next;
     }
   }
   return deadline;
