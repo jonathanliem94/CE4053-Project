@@ -147,11 +147,14 @@ void rbtree_insert(RBTree *tree, RBNode *new_node)
 
 struct RBNode *_rbtree_minimum(struct RBNode *node)
 {
-	while (node->left) {
-		node = node->left;
-	}
-
-	return node;
+  if (!IS_NULL(node)){
+    while (node->left) {
+      node = node->left;
+    }
+    
+    return node;
+  }
+  return 0;
 }
 
 void _rbtree_transplant(RBTree *tree, struct RBNode *old_node,
@@ -285,15 +288,26 @@ void *rbtree_del(RBTree *tree, void *key)
 	struct RBNode *tmp_node = tree->root;
 	int cmp = 0;
 	while (!IS_NULL(tmp_node)) {
-		cmp = tree->rbt_keycmp(key, tmp_node->key);
-		if (cmp > 0)
-			tmp_node = tmp_node->right;
-		else if (cmp < 0)
-			tmp_node = tmp_node->left;
-		else {
-			_do_delete(tree, tmp_node);
-			return key;
-		}
+//		cmp = tree->rbt_keycmp(key, tmp_node->key);
+//		if (cmp > 0)
+//			tmp_node = tmp_node->right;
+//		else if (cmp < 0)
+//			tmp_node = tmp_node->left;
+//		else {
+//			_do_delete(tree, tmp_node);
+//			return key;
+//		}
+                
+                if (key > tmp_node->key)
+                  tmp_node = tmp_node->right;
+                else if (key < tmp_node->key)
+                  tmp_node = tmp_node->left;
+                else 
+                {
+                  _do_delete(tree,tmp_node);
+                  return key;
+                }
+                
 	}
 
 	return 0;

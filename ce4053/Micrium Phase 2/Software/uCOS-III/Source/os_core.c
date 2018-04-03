@@ -396,8 +396,12 @@ void  OSSched (void)
     
     OSPrioHighRdy   = OS_PrioGetHighest();                  /* Find the highest priority ready                        */
     OSTCBHighRdyPtr = OSRdyList[OSPrioHighRdy].HeadPtr;
+    //  OSScehd() will run the highest prio task through the two variables above
+    //  OSPrioHighRdy is the highest priority task's priority
+    //  OSTCBHighRdyPtr is the highest priority task itself, the TCB pointer
     
     /* if more than 4, means non internal task, i.e. recursive tasks */
+    //  hence we need to perform necessary checks to see if we should schedule the tasks in a different manner
     if (OSPrioHighRdy > 4)
     {
       query.deadline=0;
@@ -407,24 +411,36 @@ void  OSSched (void)
         node = _get_entry(cur, struct os_avl_node, avl);
         tree_smallest = node->p_tcb;
         tree_prio = node->p_tcb->Prio;
+        //      tree_smallest points to the tcb with the smallest deadline in our intermediate ready list (AVL)
+        //      tree_prio is it's priority
         if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
         {                                      
+          //    if the next task that wants to run is less than system ceiling
+          //    we should give it priority to run
+          //    this means it has higher preemption level  
           OSPrioHighRdy = tree_prio;
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
-        else if (OSTCBHighRdyPtr == OSTCBCurPtr)
+        else if (OSTCBHighRdyPtr == OSTCBCurPtr) 
         {
+          //    if the next task to run is already running now, we just break out
           break;
         }
         else if ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == tree_smallest))
         {
+          //    the current mutex holder is the task that wants to run next
+          //    it already holds the mutex, so it should be allowed to run
           OSPrioHighRdy = tree_prio;
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
         else{  
-          /* remove node with this tcb from AVL tree and add to RB tree, ie. block it */
+          /* remove node with this tcb from AVL tree and add to RB tree, ie. block it 
+              this is because it wants to run next as according to deadline it has the next highest priority
+              but due to SRP it needs to be blocked   
+
+              this is where the rbtree comes into play, as we need transfer from avl to rbtree  */
           query.deadline=tree_smallest->Deadline;
           cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
           avl_remove(&OS_AVL_TREE, cur);

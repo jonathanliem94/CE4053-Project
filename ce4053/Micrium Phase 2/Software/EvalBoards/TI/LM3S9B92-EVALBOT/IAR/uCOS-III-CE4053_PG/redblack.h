@@ -26,4 +26,5 @@ typedef struct RBTree {
 void rbtree_init(RBTree* tree, int (*rbt_keycmp)(void *, void *));
 void rbtree_insert(RBTree *tree, RBNode *new_node);
 void *rbtree_del(RBTree *tree, void *key);
+//int rbt_keycmp(void *a, void *b);
 struct RBNode *_rbtree_minimum(struct RBNode *node);

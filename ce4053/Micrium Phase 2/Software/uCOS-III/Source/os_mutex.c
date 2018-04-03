@@ -404,7 +404,8 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         
         /*      pushing of mutex into stack       */
         STACK_NODE_ARR[stack_count].data = p_mutex;
-        OS_MUTEX_STACK_HEAD = stack_push(OS_MUTEX_STACK_HEAD, &STACK_NODE_ARR[stack_count]);   //      this pushes the current mutex pointer into the stack of mutexes
+        //      below pushes the current mutex pointer into the stack of mutexes --> OS_MUTEX_STACK_HEAD
+        OS_MUTEX_STACK_HEAD = stack_push(OS_MUTEX_STACK_HEAD, &STACK_NODE_ARR[stack_count]);   
         stack_count++;
         if (stack_count == 200)
           stack_count=0;
@@ -412,7 +413,6 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         //  then we need to check through the stack to find min deadline
         //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
         OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
-//        OS_SYSTEM_CEILING = 3000;
         
         if (p_ts != (CPU_TS *)0) {
            *p_ts                   = p_mutex->TS;
@@ -707,18 +707,23 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     
        
     /*      popping of mutex off stack       */
-    OS_MUTEX_STACK_HEAD = stack_pop(OS_MUTEX_STACK_HEAD);   //      this pushes the current mutex pointer into the stack of mutexes
-    //  then we need to check through the stack to find min deadline
+    //      this pops off current mutex pointer off the stack of mutexes, since no longer used
+    OS_MUTEX_STACK_HEAD = stack_pop(OS_MUTEX_STACK_HEAD);   
+    //  then we need to check through the stack to find min deadline to update system ceiling
     //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
     OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
     /*################################################################################################################*/
     if (OS_BLOCKED_RDY_TREE.root != 0)
     {
+      //        after releasing the mutex, we check if a task is currently being blocked in rbtree
       struct RBNode* cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
-      while ((cur->value->Deadline < OS_SYSTEM_CEILING) && (cur!=0))
+      while ((cur!=0)&&(cur->value->Deadline < OS_SYSTEM_CEILING))
       {
+        //      iterate through rbtree to check if task blocked has higher preemption than the new OS_SYSTEM_CEILING
+        //      if yes we put task back into avl tree
         new_avl_nodeArr[avl_count].deadline = cur->value->Deadline;
         new_avl_nodeArr[avl_count].p_tcb = cur->value;
+        //      then we delete the task from the rbtree
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
         avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
         cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
