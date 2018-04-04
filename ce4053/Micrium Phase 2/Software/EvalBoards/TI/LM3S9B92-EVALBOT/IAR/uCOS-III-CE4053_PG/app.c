@@ -45,9 +45,9 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   5000
-#define TASK2PERIOD                   7000
-#define TASK3PERIOD                   11000
+#define TASK1PERIOD                   6000
+#define TASK2PERIOD                   5000
+#define TASK3PERIOD                   5000
 
 #define WORKLOAD1                    2
 #define WORKLOAD2                    2
@@ -209,11 +209,11 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex two
+                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex two
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex three
+                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex three
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
@@ -288,8 +288,10 @@ static  void  AppTaskOne (void  *p_arg)
     {
       RoboTurn(LEFT_SIDE, 14, 50);
       iMove--;
+      printf("1 \n");
     }
-    
+    else
+      printf("11 \n");
     OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK ONE",0u, 0u);
@@ -310,8 +312,9 @@ static  void  AppTaskTwo (void  *p_arg)
     for(i=0; i <(WORKLOAD2*ONESECONDTICK); i++)
     {
       j = ((i * 2) + j);
+      
     }
-    
+    printf("2 \n");
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK TWO",0u, 0u);
     OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
@@ -329,7 +332,9 @@ static  void  AppTaskThree (void  *p_arg)
     OS_ERR      err;
     CPU_INT32U  iSec, k, i, j;
     CPU_TS ts;
-
+//
+//    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    
     iSec = WORKLOAD3;
 
     
@@ -341,7 +346,8 @@ static  void  AppTaskThree (void  *p_arg)
       for(i=0; i <ONESECONDTICK; i++)
          j = ((i * 2) + j);
     }
-    
+    printf("3 \n");//
+//    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     OSRecTaskDelete((OS_TCB *)0, &err);
 }
 

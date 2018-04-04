@@ -70,8 +70,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 
   OS_TCB *p_tcb;	
-  CPU_INT16U   p; 
-  OS_ERR *p_err;
   
 /*
 ************************************************************************************************************************

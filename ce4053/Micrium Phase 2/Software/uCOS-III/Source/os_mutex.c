@@ -409,6 +409,8 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         stack_count++;
         if (stack_count == 200)
           stack_count=0;
+//        if (stack_count == 31)
+//          stack_count=31;
         
         //  then we need to check through the stack to find min deadline
         //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable

@@ -445,7 +445,6 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        OS_ERR        *p_err)		
 {	
   
-  struct os_avl_node node;
 
   if(period != 0)		
   {		

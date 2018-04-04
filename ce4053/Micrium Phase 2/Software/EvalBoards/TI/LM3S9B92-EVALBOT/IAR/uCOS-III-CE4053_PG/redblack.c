@@ -286,7 +286,6 @@ void _do_delete(RBTree *tree, struct RBNode *node)
 void *rbtree_del(RBTree *tree, void *key)
 {
 	struct RBNode *tmp_node = tree->root;
-	int cmp = 0;
 	while (!IS_NULL(tmp_node)) {
 //		cmp = tree->rbt_keycmp(key, tmp_node->key);
 //		if (cmp > 0)

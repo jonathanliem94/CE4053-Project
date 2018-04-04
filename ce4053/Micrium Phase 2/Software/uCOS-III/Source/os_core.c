@@ -74,6 +74,7 @@ void  OSInit (OS_ERR  *p_err)
     heap_init(&h);
     OS_SYSTEM_CEILING = 99999999;
     stack_init(OS_MUTEX_STACK_HEAD);
+    OS_BLOCKED_RDY_TREE.rbt_keycmp = my_cmp_cb;
 //    rbtree_init(OS_BLOCKED_RDY_TREE, my_cmp_cb);
 //    OS_BLOCKED_RDY_TREE->rbt_keycmp=my_cmp_cb;
     
@@ -407,6 +408,9 @@ void  OSSched (void)
       query.deadline=0;
       while (OS_AVL_TREE.root != 0)
       {
+//        if (OSTickCtr==13000){
+//          query.deadline=0;
+//        }
         cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
         node = _get_entry(cur, struct os_avl_node, avl);
         tree_smallest = node->p_tcb;
