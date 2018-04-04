@@ -157,7 +157,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       p_tcb->Prio          = prio;                            /* Save the task's priority                               */ 		
       p_tcb->Period        = period;
-      p_tcb->Deadline      =period+OSTickCtr;
+      p_tcb->Deadline      = period+OSTickCtr;
       
       p_tcb->StkLimitPtr   = p_stk_limit;                     /* Save the stack limit pointer                           */ 		
       

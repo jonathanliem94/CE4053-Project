@@ -447,6 +447,7 @@ struct avl_node* avl_insert(struct avl_tree *tree,
             cur = cur->right;
         }else {
             // duplicated key -> return
+//          cur = cur->left;
             return cur;
         }
     }
