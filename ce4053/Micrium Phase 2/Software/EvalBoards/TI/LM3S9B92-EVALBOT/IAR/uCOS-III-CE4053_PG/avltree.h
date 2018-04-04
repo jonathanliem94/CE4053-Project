@@ -22,7 +22,11 @@ struct avl_node {
 struct os_avl_node{
     struct avl_node avl;
     OS_DEADLINE deadline;
-    OS_TCB *p_tcb;
+    OS_TCB* p_tcb; //maybe use array to store (but need change alot of other things
+     // p_tcb[5] means each avl node can contain 5 slots, then if they have same deadline
+    //  can put in same array set
+    //  so if 2 out of 3 same deadline, it will be: 1 node with array (inside just 1 tcb), 1 node with array (inside 2 tcb with same array)
+    //  if all diff deadline, 3 nodes with array(each 1 tcb)
 };
 
 struct avl_tree{
