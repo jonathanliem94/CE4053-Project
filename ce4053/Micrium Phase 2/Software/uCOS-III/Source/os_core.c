@@ -401,12 +401,20 @@ void  OSSched (void)
     //  OSPrioHighRdy is the highest priority task's priority
     //  OSTCBHighRdyPtr is the highest priority task itself, the TCB pointer
     
-    /* if more than 4, means non internal task, i.e. recursive tasks */
+
     //  hence we need to perform necessary checks to see if we should schedule the tasks in a different manner
+    
+    /*  in the end of this, whatever gets assigned to OSPrioHighRdy/OSTCBHighRdyPtr
+        will be the next task to run as scheduled by OSSched
+        
+        so we perform following checks to see if the task that AVL tree says to run, should be run
+    */
+    
+        /* if more than 4, means non internal task, i.e. recursive tasks */
     if (OSPrioHighRdy > 4)
     {
       query.deadline=0;
-      while (OS_AVL_TREE.root != 0)
+      while (OS_AVL_TREE.root != 0)     //      while something un AVL tree
       {
 //        if (OSTickCtr==13000){
 //          query.deadline=0;

@@ -70,6 +70,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
 
   OS_TCB *p_tcb;	
+  OS_TCB *temp_tcb;
   
 /*
 ************************************************************************************************************************
@@ -90,6 +91,17 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       CPU_SR_ALLOC(); 		      
       /*insert into AVL tree as well */
       //    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
+      for (int p = 0; p < k; p++)
+      {
+        //      check if any existing p_tcb in heap first
+        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
+        {
+          //      iterate through heap check if any same deadline
+           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
+             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
+             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
+        }
+      }
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
       new_avl_nodeArr[avl_count].p_tcb = p_tcb;
       avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);

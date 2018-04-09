@@ -441,11 +441,11 @@ struct avl_node* avl_insert(struct avl_tree *tree,
         cmp = func(cur, node, tree->aux);
         p = cur;
 
-        if(cmp > 0) {
+        if(cmp > 0) {   //      if node_to_be_inserted lower deadline than root
             cur = cur->left;
-        }else if (cmp < 0){
-            cur = cur->right;
-        }else {
+        }else if (cmp < 0){     //      if node_to_be_inserted higher deadline than root
+            cur = cur->right;   
+        }else {                 //      if same deadline
             // duplicated key -> return
 //          cur = cur->left;
             return cur;
