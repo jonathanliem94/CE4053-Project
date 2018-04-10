@@ -416,9 +416,9 @@ void  OSSched (void)
       query.deadline=0;
       while (OS_AVL_TREE.root != 0)     //      while something un AVL tree
       {
-//        if (OSTickCtr==13000){
-//          query.deadline=0;
-//        }
+        if (OSTickCtr==6025){   //5124 for pend mutex problem, 6025 for same period
+          query.deadline=0;
+        }
         cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
         node = _get_entry(cur, struct os_avl_node, avl);
         tree_smallest = node->p_tcb;

@@ -586,21 +586,6 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     
     //  followed by pushing it into a heap
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
-    /*insert into AVL tree as well */
-//    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
-    new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
-    new_avl_nodeArr[avl_count].p_tcb = p_tcb;
-    avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
-    avl_count++;
-    if (avl_count == 200)
-      avl_count=0;
-    
-//        OSTaskCreateHook(p_tcb);                                /* Call user defined hook                                 */
-//
-//                                                            /* --------------- ADD TASK TO READY LIST --------------- */
-//    OS_CRITICAL_ENTER();
-//    OS_PrioInsert(p_tcb->Prio);
-//    OS_RdyListInsertTail(p_tcb);
 
 #if OS_CFG_DBG_EN > 0u
     OS_TaskDbgListAdd(p_tcb);

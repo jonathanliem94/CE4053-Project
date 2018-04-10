@@ -45,8 +45,8 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   5000
-#define TASK2PERIOD                   10000
+#define TASK1PERIOD                   5000 //change to 5000 to test same period
+#define TASK2PERIOD                   6000
 #define TASK3PERIOD                   5000
 
 #define WORKLOAD1                    2
@@ -314,6 +314,7 @@ static  void  AppTaskTwo (void  *p_arg)
       j = ((i * 2) + j);
       
     }
+    RoboTurn(BACK, 14, 50);
     printf("2 \n");
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK TWO",0u, 0u);
@@ -344,8 +345,11 @@ static  void  AppTaskThree (void  *p_arg)
     {
       BSP_LED_Toggle(0u);
       for(i=0; i <ONESECONDTICK; i++)
+      {
          j = ((i * 2) + j);
+      }
     }
+    RoboTurn(FRONT, 14, 50);
     printf("3 \n");//
 //    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     OSRecTaskDelete((OS_TCB *)0, &err);

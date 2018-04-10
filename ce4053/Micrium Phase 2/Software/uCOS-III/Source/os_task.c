@@ -797,12 +797,12 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
     OS_CRITICAL_ENTER();
     switch (p_tcb->TaskState) {
         case OS_TASK_STATE_RDY:
-            /* remove node with this tcb from AVL tree */
-            query.deadline=p_tcb->Deadline;
-            cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-            avl_remove(&OS_AVL_TREE, cur);
-            /* remove from ready list as well */
-            OS_RdyListRemove(p_tcb);
+//            /* remove node with this tcb from AVL tree */
+//            query.deadline=p_tcb->Deadline;
+//            cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+//            avl_remove(&OS_AVL_TREE, cur);
+//            /* remove from ready list as well */
+//            OS_RdyListRemove(p_tcb);
              break;
         case OS_TASK_STATE_SUSPENDED:
              break;
@@ -836,6 +836,12 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
             *p_err = OS_ERR_STATE_INVALID;
             return;
     }
+    /* remove node with this tcb from AVL tree */
+    query.deadline=p_tcb->Deadline;
+    cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+    avl_remove(&OS_AVL_TREE, cur);
+    /* remove from ready list as well */
+    OS_RdyListRemove(p_tcb);
 #if OS_CFG_TASK_Q_EN > 0u
     //(void)OS_MsgQFreeAll(&p_tcb->MsgQ);                     /* Free task's message queue messages                     */
 #endif
@@ -845,7 +851,12 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
 #endif
     OSTaskQty--;                                            /* One less task being managed                            */
     //OS_TaskInitTCB(p_tcb);                                  /* Initialize the TCB to default values                   */
-   p_tcb->TaskState = (OS_STATE)OS_TASK_STATE_DEL;         /* Indicate that the task was deleted                     */
+    p_tcb->TaskState = (OS_STATE)OS_TASK_STATE_DEL;         /* Indicate that the task was deleted                     */
+    
+//    query.deadline=p_tcb->Deadline;
+//    cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+//    avl_remove(&OS_AVL_TREE, cur);
+    
     OS_CRITICAL_EXIT_NO_SCHED();
     OSSched();                                              /* Find new highest priority task                         */
     *p_err = OS_ERR_NONE;
