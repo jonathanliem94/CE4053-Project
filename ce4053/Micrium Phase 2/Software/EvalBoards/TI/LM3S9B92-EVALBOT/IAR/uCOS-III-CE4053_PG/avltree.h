@@ -1,6 +1,3 @@
-#ifndef _JSAHN_AVL_TREE_H
-#define _JSAHN_AVL_TREE_H
-
 #include "stddef.h"
 #include "stdint.h"
 #include <os.h>
@@ -10,7 +7,7 @@ extern "C" {
 
 struct avl_node {
     struct avl_node *parent, *left, *right;
-
+    int tcb_count;
 #ifdef _AVL_SEPARATE_PARENT_BF
     int bf;
 #endif
@@ -22,7 +19,10 @@ struct avl_node {
 struct os_avl_node{
     struct avl_node avl;
     OS_DEADLINE deadline;
-    OS_TCB* p_tcb; //maybe use array to store (but need change alot of other things
+    OS_TCB* p_tcb1;
+    OS_TCB* p_tcb2;
+    OS_TCB* p_tcb3;
+    //maybe use array to store (but need change alot of other things
      // p_tcb[5] means each avl node can contain 5 slots, then if they have same deadline
     //  can put in same array set
     //  so if 2 out of 3 same deadline, it will be: 1 node with array (inside just 1 tcb), 1 node with array (inside 2 tcb with same array)
@@ -79,4 +79,3 @@ struct avl_node* avl_prev(struct avl_node *node);
 }
 #endif
 
-#endif

@@ -420,7 +420,7 @@ void  OSSched (void)
       query.deadline=0;
       while (OS_AVL_TREE.root != 0)     
       {
-        if (OSTickCtr==14999){   //5124 for pend mutex problem, 6025 for same period
+        if (OSTickCtr==29000){   //5124 for pend mutex problem, 6025 for same period
           query.deadline=0;
         }
         //##########   AVL Tree to give us the next lowest deadline task        ##########################
@@ -428,8 +428,10 @@ void  OSSched (void)
         node = _get_entry(cur, struct os_avl_node, avl);
         //      the tree_smallest will have already gotten the task that has the lowest daedline
         //              based on EDF
-        tree_smallest = node->p_tcb;
-        tree_prio = node->p_tcb->Prio;
+        if (node->p_tcb1 != 0) tree_smallest = node->p_tcb1;
+        else if (node->p_tcb2 != 0) tree_smallest = node->p_tcb2;
+        else if (node->p_tcb3 != 0) tree_smallest = node->p_tcb3;
+        tree_prio = tree_smallest->Prio;
         //################################################################################################
 //        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
 //        {                                      
@@ -486,6 +488,10 @@ void  OSSched (void)
           */
           query.deadline=tree_smallest->Deadline;
           cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+          node = _get_entry(cur, struct os_avl_node, avl);
+          if (node->p_tcb1 == tree_smallest) node->p_tcb1 = 0;
+          else if (node->p_tcb2 == tree_smallest) node->p_tcb2 = 0;
+          else if (node->p_tcb3 == tree_smallest) node->p_tcb3 = 0;
           avl_remove(&OS_AVL_TREE, cur);
           OS_RdyListRemove(tree_smallest);
           RB_NODE_ARR[rb_count].parent = 0;

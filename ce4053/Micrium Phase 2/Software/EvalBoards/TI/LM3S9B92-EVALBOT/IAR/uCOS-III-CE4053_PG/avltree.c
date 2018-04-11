@@ -447,7 +447,6 @@ struct avl_node* avl_insert(struct avl_tree *tree,
             cur = cur->right;   
         }else {                 //      if same deadline
             // duplicated key -> return
-//          cur = cur->left;
             return cur;
         }
     }
@@ -539,6 +538,12 @@ void avl_remove(struct avl_tree *tree,
 
     // not found
     if (node == 0) return;
+    
+    if (node->tcb_count > 1) 
+    {
+      node->tcb_count--;
+      return;
+    }
 
     struct avl_tree right_subtree;
     struct avl_node *p=0,*cur, *next=0;

@@ -677,6 +677,8 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     OS_PEND_LIST  *p_pend_list;
     OS_TCB        *p_tcb;
     CPU_TS         ts;
+    struct avl_node* node_for_insertion;
+    struct os_avl_node *node;
     CPU_SR_ALLOC();
 
 
@@ -728,10 +730,21 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
         //      iterate through rbtree to check if task blocked has higher preemption than the new OS_SYSTEM_CEILING
         //      if yes we put task back into avl tree
         new_avl_nodeArr[avl_count].deadline = cur->value->Deadline;
-        new_avl_nodeArr[avl_count].p_tcb = cur->value;
+        new_avl_nodeArr[avl_count].p_tcb1 = cur->value;
         //      then we delete the task from the rbtree
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
-        avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+        
+        // if inserting a dupe, the function will return the node with the same key, but no insertion done
+        // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
+        node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+        node_for_insertion->tcb_count++;
+        if (&new_avl_nodeArr[avl_count].avl != node_for_insertion)
+        {
+          node = _get_entry(node_for_insertion, struct os_avl_node, avl);
+          if (node->p_tcb1 == 0) node->p_tcb1 = new_avl_nodeArr[avl_count].p_tcb1;
+          else if (node->p_tcb2 == 0) node->p_tcb2 = new_avl_nodeArr[avl_count].p_tcb1;
+          else if (node->p_tcb3 == 0) node->p_tcb3 = new_avl_nodeArr[avl_count].p_tcb1;
+        }
         OS_RdyListInsertTail(cur->value);	
         cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
         avl_count++;

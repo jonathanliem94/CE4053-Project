@@ -33,7 +33,9 @@
 #include <os.h>
 #include <heap.h>
 #include  <avltree.h>
+#include <stack.h>
 extern struct avl_tree OS_AVL_TREE;
+extern struct stack_node* OS_MUTEX_STACK_HEAD;
 extern struct heap OS_REC_HEAP;
 struct node new_nodeArr[100];
 struct os_avl_node new_avl_nodeArr[200];
@@ -71,6 +73,10 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 
   OS_TCB *p_tcb;	
   OS_TCB *temp_tcb;
+  OS_ERR *err;
+  struct avl_node* node_for_insertion;
+  struct avl_node  *cur;
+  struct os_avl_node* node, query;
   
 /*
 ************************************************************************************************************************
@@ -91,21 +97,33 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       CPU_SR_ALLOC(); 		      
       /*insert into AVL tree as well */
       //    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
-      //##########################      INCREMENT DEADLINE TO DEAL WITH SAME DEADLINES  #########################################################################
-      for (int p = 0; p < k; p++)
-      {
-        //      check if any existing p_tcb in heap first
-        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
-        {
-          //      iterate through heap check if any same deadline
-           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
-             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
-             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
-        }
-      }//#######################################################################################################################################################
+//      //##########################      INCREMENT DEADLINE TO DEAL WITH SAME DEADLINES  #########################################################################
+//      for (int p = 0; p < k; p++)
+//      {
+//        //      check if any existing p_tcb in heap first
+//        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
+//        {
+//          //      iterate through heap check if any same deadline
+//           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
+//             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
+//             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
+//        }
+//      }//#######################################################################################################################################################
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
-      new_avl_nodeArr[avl_count].p_tcb = p_tcb;
-      avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+      new_avl_nodeArr[avl_count].p_tcb1 = p_tcb;
+      
+      // if inserting a dupe, the function will return the node with the same key, but no insertion done
+      // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
+      node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+      node_for_insertion->tcb_count++;
+      if (&new_avl_nodeArr[avl_count].avl != node_for_insertion)
+      {
+        node = _get_entry(node_for_insertion, struct os_avl_node, avl);
+        if (node->p_tcb1 == 0) node->p_tcb1 = new_avl_nodeArr[avl_count].p_tcb1;
+        else if (node->p_tcb2 == 0) node->p_tcb2 = new_avl_nodeArr[avl_count].p_tcb1;
+        else if (node->p_tcb3 == 0) node->p_tcb3 = new_avl_nodeArr[avl_count].p_tcb1;
+      }
+      
       avl_count++;
       if (avl_count == 200)
         avl_count=0;
@@ -138,6 +156,72 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
     {		
       p_tcb = OS_REC_HEAP.node_arr[0]->p_tcb;
       CPU_STK_SIZE   j; 		
+      
+//      query.deadline=p_tcb->Deadline;
+//      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+//      node = _get_entry(cur, struct os_avl_node, avl);
+//###########################################################################
+//      if (node->p_tcb1 == p_tcb) 
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb1);
+//        node->p_tcb1 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+//      else if (node->p_tcb2 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb2);
+//        node->p_tcb2 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+//      else if (node->p_tcb3 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb3);
+//        node->p_tcb3 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+      //#########################################################################
+//      query.deadline=p_tcb->Deadline;
+//      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+//      node = _get_entry(cur, struct os_avl_node, avl);
+//      
+//      if (node->p_tcb1 == p_tcb) 
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OSRecTaskDelete((OS_TCB *)node->p_tcb1, &err);
+//      }
+//      else if (node->p_tcb2 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OSRecTaskDelete((OS_TCB *)node->p_tcb2, &err);
+//      }
+//      else if (node->p_tcb3 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OSRecTaskDelete((OS_TCB *)node->p_tcb3, &err);
+//      }
+      
+      
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
       OS_OBJ_QTY     reg_nbr; 		
 #endif 		
@@ -230,13 +314,27 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       new_nodeArr[count].period = p_tcb->Period;
       new_nodeArr[count].p_tcb = p_tcb;
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
-      new_avl_nodeArr[avl_count].p_tcb = p_tcb;
+      new_avl_nodeArr[avl_count].p_tcb1 = p_tcb;
+     
+      
       OS_CRITICAL_ENTER();    //      do we need this?
       
-      avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+      // if inserting a dupe, the function will return the node with the same key, but no insertion done
+      // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
+      node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+      node_for_insertion->tcb_count++;
+      if (&new_avl_nodeArr[avl_count].avl != node_for_insertion)
+      {
+        node = _get_entry(node_for_insertion, struct os_avl_node, avl);
+        if (node->p_tcb1 == 0) node->p_tcb1 = new_avl_nodeArr[avl_count].p_tcb1;
+        else if (node->p_tcb2 == 0) node->p_tcb2 = new_avl_nodeArr[avl_count].p_tcb1;
+        else if (node->p_tcb3 == 0) node->p_tcb3 = new_avl_nodeArr[avl_count].p_tcb1;
+      }
+      
       heap_pop(&OS_REC_HEAP);
       
       OS_CRITICAL_EXIT_NO_SCHED();	
+      
       avl_count++;
       if (avl_count == 200)
         avl_count=0;

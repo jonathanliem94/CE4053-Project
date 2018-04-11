@@ -800,6 +800,10 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
             /* remove node with this tcb from AVL tree */
             query.deadline=p_tcb->Deadline;
             cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+            node = _get_entry(cur, struct os_avl_node, avl);
+            if (node->p_tcb1 == p_tcb) node->p_tcb1 = 0;
+            else if (node->p_tcb2 == p_tcb) node->p_tcb2 = 0;
+            else if (node->p_tcb3 == p_tcb) node->p_tcb3 = 0;
             avl_remove(&OS_AVL_TREE, cur);
             /* remove from ready list as well */
             OS_RdyListRemove(p_tcb);
