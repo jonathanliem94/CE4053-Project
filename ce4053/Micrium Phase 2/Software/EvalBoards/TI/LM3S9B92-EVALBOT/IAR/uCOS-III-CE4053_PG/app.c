@@ -45,7 +45,7 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   5000 //change to 5000 to test same period
+#define TASK1PERIOD                   7000 //change to 5000 to test same period, 7000 for the other
 #define TASK2PERIOD                   6000
 #define TASK3PERIOD                   5000
 
@@ -209,11 +209,11 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)2, 
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex two
+                  (OS_TCB  *)&AppTaskThreeTCB,    //      resource ceiling for mutex two
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex three
+                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex three
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
@@ -276,7 +276,9 @@ static  void  AppTaskOne (void  *p_arg)
    
     iSec = WORKLOAD1;
     OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("1 take \t 2\n");
     OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("1 take \t 3\n");
     
     for(k=0; k<iSec; k++)
     {
@@ -286,16 +288,19 @@ static  void  AppTaskOne (void  *p_arg)
     
     if(iMove > 0)
     {
-      RoboTurn(LEFT_SIDE, 14, 50);
-      iMove--;
-      printf("1 \n");
+//      RoboTurn(LEFT_SIDE, 14, 50);
+//      iMove--;
+      printf("1 task run\n");
     }
-    else
-      printf("11 \n");
+//    else
+//      printf("11 \n");
+    printf("1 gonna rele 3\n");
     OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK ONE",0u, 0u);
+    printf("1 gonna rele 2\n");
     OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+
         
     //printf("\nT1");
     OSRecTaskDelete((OS_TCB *)0, &err);
@@ -308,22 +313,22 @@ static  void  AppTaskTwo (void  *p_arg)
     CPU_TS ts;
     
     OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
-    
+    printf("2 take \t 3\n");
     for(i=0; i <(WORKLOAD2*ONESECONDTICK); i++)
     {
       j = ((i * 2) + j);
       
     }
-    RoboTurn(BACK, 14, 50);
-    printf("2 \n");
+//    RoboTurn(BACK, 14, 50);
+    printf("2 task run\n");
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK TWO",0u, 0u);
     OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
-
+    printf("2 take \t 2 \n");
+    printf("2 gonna rele 2 \n");
     OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
-
+    printf("2 gonna rele 3 \n");
     OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
-
     //printf("\nT2");
     OSRecTaskDelete((OS_TCB *)0, &err);
 }
@@ -333,8 +338,9 @@ static  void  AppTaskThree (void  *p_arg)
     OS_ERR      err;
     CPU_INT32U  iSec, k, i, j;
     CPU_TS ts;
-//
-//    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    
+    printf("3 take \t 2\n");
+    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
     
     iSec = WORKLOAD3;
 
@@ -349,9 +355,10 @@ static  void  AppTaskThree (void  *p_arg)
          j = ((i * 2) + j);
       }
     }
-    RoboTurn(FRONT, 14, 50);
-    printf("3 \n");//
-//    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+//    RoboTurn(FRONT, 14, 50);
+    printf("3 task run\n");//
+    printf("3 gonna rele  \n");
+    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     OSRecTaskDelete((OS_TCB *)0, &err);
 }
 

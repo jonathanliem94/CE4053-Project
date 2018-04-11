@@ -416,6 +416,10 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
         OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
         
+        /*      we need to assign the task holding this mutex to have resource ceiling's priority?
+                or maybe this is already done with the comparison with system ceiling
+        */
+        
         if (p_ts != (CPU_TS *)0) {
            *p_ts                   = p_mutex->TS;
         }
@@ -728,6 +732,7 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
         //      then we delete the task from the rbtree
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
         avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+        OS_RdyListInsertTail(cur->value);	
         cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
         avl_count++;
         if (avl_count == 200)

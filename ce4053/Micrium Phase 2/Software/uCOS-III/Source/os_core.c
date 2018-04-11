@@ -413,30 +413,62 @@ void  OSSched (void)
         /* if more than 4, means non internal task, i.e. recursive tasks */
     if (OSPrioHighRdy > 4)
     {
+/*      we only schedule a task if it fulfils SRP requirements:
+        1. Task must have higher preemption/lower deadline than current running task
+        2. Task's preemption is higher than current system ceiling, cannot be equal! --> lower deadline
+*/
       query.deadline=0;
-      while (OS_AVL_TREE.root != 0)     //      while something un AVL tree
+      while (OS_AVL_TREE.root != 0)     
       {
-        if (OSTickCtr==6025){   //5124 for pend mutex problem, 6025 for same period
+        if (OSTickCtr==14999){   //5124 for pend mutex problem, 6025 for same period
           query.deadline=0;
         }
+        //##########   AVL Tree to give us the next lowest deadline task        ##########################
         cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
         node = _get_entry(cur, struct os_avl_node, avl);
+        //      the tree_smallest will have already gotten the task that has the lowest daedline
+        //              based on EDF
         tree_smallest = node->p_tcb;
         tree_prio = node->p_tcb->Prio;
-        //      tree_smallest points to the tcb with the smallest deadline in our intermediate ready list (AVL)
-        //      tree_prio is it's priority
-        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
-        {                                      
-          //    if the next task that wants to run is less than system ceiling
-          //    we should give it priority to run
-          //    this means it has higher preemption level  
+        //################################################################################################
+//        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
+//        {                                      
+//          //    if the next lowest deadline task has higher preemption than system ceiling --> first condition 
+//          OSPrioHighRdy = tree_prio;
+//          OSTCBHighRdyPtr = tree_smallest;
+//          break;
+//        }
+//        else if (tree_smallest == OSTCBCurPtr) 
+//        {
+//          //    if the next lowest deadline task is already running now, then make sure system knows it should still run
+//          OSPrioHighRdy = tree_prio;
+//          OSTCBHighRdyPtr = tree_smallest;
+//          break;
+//        }
+//        /*      ********************************        not sure if following code is correct? *********************************/
+//        else if ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == tree_smallest))
+//        {
+//          //    the current mutex holder is the task that wants to run next
+//          //    it already holds the mutex, so it should be allowed to run
+//          OSPrioHighRdy = tree_prio;
+//          OSTCBHighRdyPtr = tree_smallest;
+//          break;
+//        }
+        //########################      New Code        ##############################################################
+        if (tree_smallest == OSTCBCurPtr) 
+        {
+          //    if the next lowest deadline task is already running now, then make sure system knows it should still run
           OSPrioHighRdy = tree_prio;
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
-        else if (OSTCBHighRdyPtr == OSTCBCurPtr) 
-        {
-          //    if the next task to run is already running now, we just break out
+        else if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
+        {    
+         /*        the task must have higher preemption/lower deadline than current running task
+            we just need check condition 2, since condition 1 fulfilled by EDF sched
+        */
+          OSPrioHighRdy = tree_prio;
+          OSTCBHighRdyPtr = tree_smallest;
           break;
         }
         else if ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == tree_smallest))
@@ -447,15 +479,15 @@ void  OSSched (void)
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
+        //########################    END of New Code        ##############################################################
         else{  
-          /* remove node with this tcb from AVL tree and add to RB tree, ie. block it 
-              this is because it wants to run next as according to deadline it has the next highest priority
-              but due to SRP it needs to be blocked   
-
-              this is where the rbtree comes into play, as we need transfer from avl to rbtree  */
+          /* does not fulfil SRP Requirements
+              move to blocking tree
+          */
           query.deadline=tree_smallest->Deadline;
           cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
           avl_remove(&OS_AVL_TREE, cur);
+          OS_RdyListRemove(tree_smallest);
           RB_NODE_ARR[rb_count].parent = 0;
           RB_NODE_ARR[rb_count].key = (void *)tree_smallest->Deadline;
           RB_NODE_ARR[rb_count].value = tree_smallest;
