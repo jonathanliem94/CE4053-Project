@@ -22,7 +22,7 @@ struct avl_node {
 struct os_avl_node{
     struct avl_node avl;
     OS_DEADLINE deadline;
-    OS_TCB *p_tcb;
+    OS_TCB *p_tcb[5];
 };
 
 struct avl_tree{

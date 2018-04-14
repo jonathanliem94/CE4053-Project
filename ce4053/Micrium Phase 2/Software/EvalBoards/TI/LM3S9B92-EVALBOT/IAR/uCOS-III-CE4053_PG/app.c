@@ -45,9 +45,9 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   7000 //change to 5000 to test same period, 7000 for the other
+#define TASK1PERIOD                   6000 
 #define TASK2PERIOD                   6000
-#define TASK3PERIOD                   5000
+#define TASK3PERIOD                   6000
 
 #define WORKLOAD1                    2
 #define WORKLOAD2                    2
@@ -209,11 +209,11 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)2, 
-                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex two
+                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex two
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex three
+                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex three
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
@@ -358,7 +358,7 @@ static  void  AppTaskThree (void  *p_arg)
     }
 //    RoboTurn(FRONT, 14, 50);
     printf("3 task run\n");//
-//    printf("3 gonna rele  \n");
+//    printf("3 gonna rele 3\n");
 //    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     OSRecTaskDelete((OS_TCB *)0, &err);
 }

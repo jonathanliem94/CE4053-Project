@@ -420,7 +420,7 @@ void  OSSched (void)
       query.deadline=0;
       while (OS_AVL_TREE.root != 0)     
       {
-        if (OSTickCtr==29000){   //5124 for pend mutex problem, 6025 for same period
+        if (OSTickCtr==29000){ 
           query.deadline=0;
         }
         //##########   AVL Tree to give us the next lowest deadline task        ##########################
@@ -432,30 +432,6 @@ void  OSSched (void)
         else if (node->p_tcb2 != 0) tree_smallest = node->p_tcb2;
         else if (node->p_tcb3 != 0) tree_smallest = node->p_tcb3;
         tree_prio = tree_smallest->Prio;
-        //################################################################################################
-//        if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
-//        {                                      
-//          //    if the next lowest deadline task has higher preemption than system ceiling --> first condition 
-//          OSPrioHighRdy = tree_prio;
-//          OSTCBHighRdyPtr = tree_smallest;
-//          break;
-//        }
-//        else if (tree_smallest == OSTCBCurPtr) 
-//        {
-//          //    if the next lowest deadline task is already running now, then make sure system knows it should still run
-//          OSPrioHighRdy = tree_prio;
-//          OSTCBHighRdyPtr = tree_smallest;
-//          break;
-//        }
-//        /*      ********************************        not sure if following code is correct? *********************************/
-//        else if ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == tree_smallest))
-//        {
-//          //    the current mutex holder is the task that wants to run next
-//          //    it already holds the mutex, so it should be allowed to run
-//          OSPrioHighRdy = tree_prio;
-//          OSTCBHighRdyPtr = tree_smallest;
-//          break;
-//        }
         //########################      New Code        ##############################################################
         if (tree_smallest == OSTCBCurPtr) 
         {
