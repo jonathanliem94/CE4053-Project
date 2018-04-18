@@ -1183,6 +1183,8 @@ OS_EXT            OS_TICK                OSTickCtr;                   /* Counts 
 OS_EXT            OS_TCB                 OSTickTaskTCB;
 OS_EXT            CPU_TS                 OSTickTaskTimeMax;
 OS_EXT            CPU_INT32U             syncRelease;       
+OS_EXT            OS_FLAG_GRP            MyEventFlag;
+
 
 #if OS_CFG_TMR_EN > 0u                                                /* TIMERS ------------------------------------- */
 #if OS_CFG_DBG_EN > 0u

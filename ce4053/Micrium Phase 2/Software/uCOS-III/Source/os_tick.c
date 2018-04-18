@@ -78,8 +78,8 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   struct avl_node  *cur;
   struct os_avl_node* node, query;
 //  OS_FLAG_GRP syncFlag;
-//  OSFlagCreate((OS_FLAG_GRP *)&syncFlag,
-//             (CPU_CHAR *)"SyncFlag",
+//  OSFlagCreate((OS_FLAG_GRP *)&MyEventFlag,
+//             (CPU_CHAR *)"MyEventFlag",
 //             (OS_FLAGS)0,
 //             (OS_ERR *)&err);
 /*
@@ -91,28 +91,30 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   Only done at start --> OSTickCtr == 0
 ************************************************************************************************************************
 */
-  if (OSTickCtr == 5) {
-    //  iterate through heap (size 5) 
-    //  add them all into readylist at one go
+//  if (OSTickCtr == 5) {
+  if(syncRelease == 0)      {
+//    if(&MyEventFlag.Flags == 1) {
+  //  iterate through heap (size 5) 
+  //  add them all into readylist at one go
     for (int k = 0; k < 3; k++) 
     {
       p_tcb = OS_REC_HEAP.node_arr[k]->p_tcb;
-	
+      
       CPU_SR_ALLOC(); 		      
       /*insert into AVL tree as well */
       //    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
-//      //##########################      INCREMENT DEADLINE TO DEAL WITH SAME DEADLINES  #########################################################################
-//      for (int p = 0; p < k; p++)
-//      {
-//        //      check if any existing p_tcb in heap first
-//        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
-//        {
-//          //      iterate through heap check if any same deadline
-//           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
-//             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
-//             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
-//        }
-//      }//#######################################################################################################################################################
+      //      //##########################      INCREMENT DEADLINE TO DEAL WITH SAME DEADLINES  #########################################################################
+      //      for (int p = 0; p < k; p++)
+      //      {
+      //        //      check if any existing p_tcb in heap first
+      //        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
+      //        {
+      //          //      iterate through heap check if any same deadline
+      //           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
+      //             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
+      //             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
+      //        }
+      //      }//#######################################################################################################################################################
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
       new_avl_nodeArr[avl_count].p_tcb1 = p_tcb;
       
@@ -146,9 +148,13 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-    syncRelease = 1;
-    //    sync release flag set to 1;
-  }
+    syncRelease = 1;    //    sync release flag set to 1;
+//    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
+//                (OS_FLAGS)0x01,
+//                (OS_OPT) OS_OPT_POST_FLAG_CLR,
+//                (OS_ERR *)&err);
+  
+}
 //******************************        if no longer at the start       *****************************************************************************************
 //******************************   
 //******************************   

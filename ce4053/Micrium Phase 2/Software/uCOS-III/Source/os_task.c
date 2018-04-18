@@ -752,6 +752,11 @@ void  OSTaskDel (OS_TCB  *p_tcb,
     p_tcb->TaskState = (OS_STATE)OS_TASK_STATE_DEL;         /* Indicate that the task was deleted                     */
 
     OS_CRITICAL_EXIT_NO_SCHED();
+//    syncRelease = 1;
+//    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
+//                (OS_FLAGS)0x01,
+//                (OS_OPT) OS_OPT_POST_FLAG_SET,
+//                (OS_ERR *)OS_ERR_NONE);
     OSSched();                                              /* Find new highest priority task                         */
 
     *p_err = OS_ERR_NONE;

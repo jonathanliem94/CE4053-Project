@@ -378,12 +378,20 @@ void  OSSafetyCriticalStart (void)
 
 void  OSSched (void)
 {
+    CPU_INT32U ts_start1;
+    CPU_INT32U ts_end1; 
+    int P = 0;
+    
+    
+    ts_start1 = CPU_TS_Get32();
+  //*****************************************************************************************************************
     OS_TCB* tree_smallest;
     OS_PRIO tree_prio;
     struct avl_node *cur;
     struct os_avl_node *node, query;
     CPU_SR_ALLOC();
     
+//    if (&MyEventFlag.Flags == 0) 
     
     if (OSIntNestingCtr > (OS_NESTING_CTR)0) {              /* ISRs still nested?                                     */
       return;                                             /* Yes ... only schedule when no nested ISRs              */
@@ -401,25 +409,25 @@ void  OSSched (void)
     //  OSPrioHighRdy is the highest priority task's priority
     //  OSTCBHighRdyPtr is the highest priority task itself, the TCB pointer
     
-
+    
     //  hence we need to perform necessary checks to see if we should schedule the tasks in a different manner
     
     /*  in the end of this, whatever gets assigned to OSPrioHighRdy/OSTCBHighRdyPtr
-        will be the next task to run as scheduled by OSSched
-        
-        so we perform following checks to see if the task that AVL tree says to run, should be run
+    will be the next task to run as scheduled by OSSched
+    
+    so we perform following checks to see if the task that AVL tree says to run, should be run
     */
     
-        /* if more than 4, means non internal task, i.e. recursive tasks */
+    /* if more than 4, means non internal task, i.e. recursive tasks */
     //  check for sync release flag
-    if (OSPrioHighRdy > 4)
-    {
-/*      we only schedule a task if it fulfils SRP requirements:
+    if (syncRelease == 1){
+      if (OSPrioHighRdy > 4)
+      {
+        /*      we only schedule a task if it fulfils SRP requirements:
         1. Task must have higher preemption/lower deadline than current running task
         2. Task's preemption is higher than current system ceiling, cannot be equal! --> lower deadline
-      */     
-      if (syncRelease == 1) 
-      {
+        */     
+        
         query.deadline=0;
         while (OS_AVL_TREE.root != 0)     
         {
@@ -484,21 +492,27 @@ void  OSSched (void)
               rb_count=0;
           }
         }
+        
       }
     }
-    
-    if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
-      CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
-      return;
-    }
-    
+      
+      if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
+        CPU_INT_EN();                                       /* Yes ... no need to context switch                      */
+        return;
+      }
+      
 #if OS_CFG_TASK_PROFILE_EN > 0u
-    OSTCBHighRdyPtr->CtxSwCtr++;                            /* Inc. # of context switches to this task                */
+      OSTCBHighRdyPtr->CtxSwCtr++;                            /* Inc. # of context switches to this task                */
 #endif
-    OSTaskCtxSwCtr++;                                       /* Increment context switch counter                       */
+      OSTaskCtxSwCtr++;                                       /* Increment context switch counter                       */
+    
     
     OS_TASK_SW();                                           /* Perform a task level context switch                    */
     CPU_INT_EN();
+    //*****************************************************************************************************************
+                  P = P;
+                  ts_end1 = CPU_TS_Get32()-ts_start1;
+                  P = P;
 }
 
 /*$PAGE*/
