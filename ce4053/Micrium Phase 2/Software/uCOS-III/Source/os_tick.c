@@ -77,7 +77,11 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   struct avl_node* node_for_insertion;
   struct avl_node  *cur;
   struct os_avl_node* node, query;
-  
+//  OS_FLAG_GRP syncFlag;
+//  OSFlagCreate((OS_FLAG_GRP *)&syncFlag,
+//             (CPU_CHAR *)"SyncFlag",
+//             (OS_FLAGS)0,
+//             (OS_ERR *)&err);
 /*
 ************************************************************************************************************************
 *                                                 Adding Recursive Task into ready list
@@ -142,7 +146,8 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-//    syncRelease = 1;
+    syncRelease = 1;
+    //    sync release flag set to 1;
   }
 //******************************        if no longer at the start       *****************************************************************************************
 //******************************   
@@ -162,44 +167,46 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
           if yes, we need to remove from avl and readylist
           this is because it has already missed its deadline in the previous incarnation
 */      
-      query.deadline=p_tcb->Deadline;
-      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-      node = _get_entry(cur, struct os_avl_node, avl);
-//      ###########################################################################
-      if (node->p_tcb1 == p_tcb) 
-      {
-        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-        {
-          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-        }
-        OS_RdyListRemove(node->p_tcb1);
-        node->p_tcb1 = 0;
-        avl_remove(&OS_AVL_TREE, cur);
-      }
-      else if (node->p_tcb2 == p_tcb)
-      {
-        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-        {
-          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-        }
-        OS_RdyListRemove(node->p_tcb2);
-        node->p_tcb2 = 0;
-        avl_remove(&OS_AVL_TREE, cur);
-      }
-      else if (node->p_tcb3 == p_tcb)
-      {
-        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-        {
-          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-        }
-        OS_RdyListRemove(node->p_tcb3);
-        node->p_tcb3 = 0;
-        avl_remove(&OS_AVL_TREE, cur);
-      }
-//      //#########################################################################
+
+
+//      query.deadline=p_tcb->Deadline;
+//      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+//      node = _get_entry(cur, struct os_avl_node, avl);
+//      if (node->p_tcb1 == p_tcb) 
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb1);
+//        node->p_tcb1 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+//      else if (node->p_tcb2 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb2);
+//        node->p_tcb2 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+//      else if (node->p_tcb3 == p_tcb)
+//      {
+//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+//        {
+//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+//        }
+//        OS_RdyListRemove(node->p_tcb3);
+//        node->p_tcb3 = 0;
+//        avl_remove(&OS_AVL_TREE, cur);
+//      }
+      //      ###########################################################################
+      //      #########################################################################
 //      query.deadline=p_tcb->Deadline;
 //      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
 //      node = _get_entry(cur, struct os_avl_node, avl);
