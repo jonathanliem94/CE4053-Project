@@ -92,7 +92,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 ************************************************************************************************************************
 */
 //  if (OSTickCtr == 5) {
-  if(syncRelease == 0)      {
+  if(syncRelease == 1)      {
 //    if(&MyEventFlag.Flags == 1) {
   //  iterate through heap (size 5) 
   //  add them all into readylist at one go
@@ -148,7 +148,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-    syncRelease = 1;    //    sync release flag set to 1;
+//    syncRelease = 1;    //    sync release flag set to 1;
 //    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
 //                (OS_FLAGS)0x01,
 //                (OS_OPT) OS_OPT_POST_FLAG_CLR,
@@ -173,7 +173,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
           if yes, we need to remove from avl and readylist
           this is because it has already missed its deadline in the previous incarnation
 */      
-
 
 //      query.deadline=p_tcb->Deadline;
 //      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
@@ -319,8 +318,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       OS_PrioInsert(p_tcb->Prio);		
       OS_RdyListInsertTail(p_tcb);		
       
-      /*insert into AVL tree as well */
-//      node = (struct os_avl_node *)malloc(sizeof(struct os_avl_node));
       
 #if OS_CFG_DBG_EN > 0u		
       OS_TaskDbgListAdd(p_tcb);		
@@ -330,6 +327,8 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
         OS_CRITICAL_EXIT();		
         return;		
       }		
+      
+      /*insert into AVL tree as well */
       count=count%100;
       new_nodeArr[count].deadline = p_tcb->Deadline;
       new_nodeArr[count].period = p_tcb->Period;
@@ -353,20 +352,15 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }
       
       heap_pop(&OS_REC_HEAP);
-      
+      heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
       OS_CRITICAL_EXIT_NO_SCHED();	
       
       avl_count++;
       if (avl_count == 200)
         avl_count=0;
-      heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
-      //      
-      //      int new_priority = ((p_tcb->Deadline-OSTickCtr)/1000)+3;
-      //        OSTaskChangePrio ((OS_TCB   *)p_tcb,
-      //                          (OS_PRIO   )new_priority,
-      //                          (OS_ERR   *)p_err);
-      
       count++;
+      if (count == 100)
+        count=0;
     }
   }   //      comment this to prove readylist function (syncrhonous release)
   //                P = P;
