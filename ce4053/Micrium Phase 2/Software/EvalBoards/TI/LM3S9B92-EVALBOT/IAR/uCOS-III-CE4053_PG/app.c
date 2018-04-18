@@ -46,7 +46,7 @@
 #define ONESECONDTICK             7000000
 
 #define TASK1PERIOD                   5000 
-#define TASK2PERIOD                   5000
+#define TASK2PERIOD                   6000
 #define TASK3PERIOD                   6000
 
 #define WORKLOAD1                    2

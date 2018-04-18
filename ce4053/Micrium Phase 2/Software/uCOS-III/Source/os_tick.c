@@ -70,32 +70,33 @@ const  CPU_CHAR  *os_tick__c = "$Id: $";
 
 void OS_revive_rec_task(void)		//      insert tasks into ready list
 {		
-
+  
   OS_TCB *p_tcb;	
   OS_TCB *temp_tcb;
   OS_ERR *err;
   struct avl_node* node_for_insertion;
   struct avl_node  *cur;
   struct os_avl_node* node, query;
-//  OS_FLAG_GRP syncFlag;
-//  OSFlagCreate((OS_FLAG_GRP *)&MyEventFlag,
-//             (CPU_CHAR *)"MyEventFlag",
-//             (OS_FLAGS)0,
-//             (OS_ERR *)&err);
-/*
-************************************************************************************************************************
-*                                                 Adding Recursive Task into ready list
+  //  OS_FLAG_GRP syncFlag;
+  //  OSFlagCreate((OS_FLAG_GRP *)&MyEventFlag,
+  //             (CPU_CHAR *)"MyEventFlag",
+  //             (OS_FLAGS)0,
+  //             (OS_ERR *)&err);
+  /*
+  ************************************************************************************************************************
+  *                                                 Adding Recursive Task into ready list
   This will run a pseudo OSTaskCreate to add the tasks into ready list at the start once they are all in the heap, pushed by OSRecTaskCreate()
   We iterate through the heap to place each node (p_tcb) into the readylist
-
+  
   Only done at start --> OSTickCtr == 0
-************************************************************************************************************************
-*/
-//  if (OSTickCtr == 5) {
-  if(syncRelease == 1)      {
-//    if(&MyEventFlag.Flags == 1) {
-  //  iterate through heap (size 5) 
-  //  add them all into readylist at one go
+  ************************************************************************************************************************
+  */
+  //  if (OSTickCtr == 5) {
+  if(syncRelease == 1)
+  {
+    //    if(&MyEventFlag.Flags == 1) {
+    //  iterate through heap (size 5) 
+    //  add them all into readylist at one go
     for (int k = 0; k < 3; k++) 
     {
       p_tcb = OS_REC_HEAP.node_arr[k]->p_tcb;
@@ -148,19 +149,19 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-//    syncRelease = 1;    //    sync release flag set to 1;
-//    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
-//                (OS_FLAGS)0x01,
-//                (OS_OPT) OS_OPT_POST_FLAG_CLR,
-//                (OS_ERR *)&err);
-  
-}
-//******************************        if no longer at the start       *****************************************************************************************
-//******************************   
-//******************************   
-//******************************   
-//******************************   
-//******************************   
+    syncRelease = 2;    //    sync release flag set to 1;
+    //    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
+    //                (OS_FLAGS)0x01,
+    //                (OS_OPT) OS_OPT_POST_FLAG_CLR,
+    //                (OS_ERR *)&err);
+    
+  }
+  //******************************        if no longer at the start       *****************************************************************************************
+  //******************************   
+  //******************************   
+  //******************************   
+  //******************************   
+  //******************************   
   
   else {
     while (OSTickCtr == OS_REC_HEAP.node_arr[0]->deadline)     
@@ -168,78 +169,78 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       p_tcb = OS_REC_HEAP.node_arr[0]->p_tcb;
       CPU_STK_SIZE   j; 		
       
-//      ######################################################################### 
-/*      following code checks if the next task to run already exists inside avl,
-          if yes, we need to remove from avl and readylist
-          this is because it has already missed its deadline in the previous incarnation
-*/      
-
-//      query.deadline=p_tcb->Deadline;
-//      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-//      node = _get_entry(cur, struct os_avl_node, avl);
-//      if (node->p_tcb1 == p_tcb) 
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OS_RdyListRemove(node->p_tcb1);
-//        node->p_tcb1 = 0;
-//        avl_remove(&OS_AVL_TREE, cur);
-//      }
-//      else if (node->p_tcb2 == p_tcb)
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OS_RdyListRemove(node->p_tcb2);
-//        node->p_tcb2 = 0;
-//        avl_remove(&OS_AVL_TREE, cur);
-//      }
-//      else if (node->p_tcb3 == p_tcb)
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OS_RdyListRemove(node->p_tcb3);
-//        node->p_tcb3 = 0;
-//        avl_remove(&OS_AVL_TREE, cur);
-//      }
+      //      ######################################################################### 
+      /*      following code checks if the next task to run already exists inside avl,
+      if yes, we need to remove from avl and readylist
+      this is because it has already missed its deadline in the previous incarnation
+      */      
+      
+      //      query.deadline=p_tcb->Deadline;
+      //      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+      //      node = _get_entry(cur, struct os_avl_node, avl);
+      //      if (node->p_tcb1 == p_tcb) 
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OS_RdyListRemove(node->p_tcb1);
+      //        node->p_tcb1 = 0;
+      //        avl_remove(&OS_AVL_TREE, cur);
+      //      }
+      //      else if (node->p_tcb2 == p_tcb)
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OS_RdyListRemove(node->p_tcb2);
+      //        node->p_tcb2 = 0;
+      //        avl_remove(&OS_AVL_TREE, cur);
+      //      }
+      //      else if (node->p_tcb3 == p_tcb)
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OS_MUTEX_STACK_HEAD->data->OwnerNestingCtr--;
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OS_RdyListRemove(node->p_tcb3);
+      //        node->p_tcb3 = 0;
+      //        avl_remove(&OS_AVL_TREE, cur);
+      //      }
       //      ###########################################################################
       //      #########################################################################
-//      query.deadline=p_tcb->Deadline;
-//      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-//      node = _get_entry(cur, struct os_avl_node, avl);
-//      
-//      if (node->p_tcb1 == p_tcb) 
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OSRecTaskDelete((OS_TCB *)node->p_tcb1, &err);
-//      }
-//      else if (node->p_tcb2 == p_tcb)
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OSRecTaskDelete((OS_TCB *)node->p_tcb2, &err);
-//      }
-//      else if (node->p_tcb3 == p_tcb)
-//      {
-//        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-//        {
-//          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-//        }
-//        OSRecTaskDelete((OS_TCB *)node->p_tcb3, &err);
-//      }
+      //      query.deadline=p_tcb->Deadline;
+      //      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
+      //      node = _get_entry(cur, struct os_avl_node, avl);
+      //      
+      //      if (node->p_tcb1 == p_tcb) 
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OSRecTaskDelete((OS_TCB *)node->p_tcb1, &err);
+      //      }
+      //      else if (node->p_tcb2 == p_tcb)
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OSRecTaskDelete((OS_TCB *)node->p_tcb2, &err);
+      //      }
+      //      else if (node->p_tcb3 == p_tcb)
+      //      {
+      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
+      //        {
+      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
+      //        }
+      //        OSRecTaskDelete((OS_TCB *)node->p_tcb3, &err);
+      //      }
       
       
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
@@ -335,7 +336,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       new_nodeArr[count].p_tcb = p_tcb;
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
       new_avl_nodeArr[avl_count].p_tcb1 = p_tcb;
-     
+      
       
       OS_CRITICAL_ENTER();    //      do we need this?
       
