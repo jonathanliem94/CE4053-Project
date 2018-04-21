@@ -755,10 +755,6 @@ void  OSTaskDel (OS_TCB  *p_tcb,
     if (syncRelease==0){
       syncRelease = 1;
     }
-//    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
-//                (OS_FLAGS)0x01,
-//                (OS_OPT) OS_OPT_POST_FLAG_SET,
-//                (OS_ERR *)OS_ERR_NONE);
     OSSched();                                              /* Find new highest priority task                         */
 
     *p_err = OS_ERR_NONE;

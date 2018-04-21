@@ -381,9 +381,9 @@ void  OSSched (void)
     CPU_INT32U ts_start1;
     CPU_INT32U ts_end1; 
     int P = 0;
+
     
     
-    ts_start1 = CPU_TS_Get32();
   //*****************************************************************************************************************
     OS_TCB* tree_smallest;
     OS_PRIO tree_prio;
@@ -391,8 +391,6 @@ void  OSSched (void)
     struct os_avl_node *node, query;
     CPU_SR_ALLOC();
     
-//    if (&MyEventFlag.Flags == 0) 
-    //  check for sync release flag
     if (syncRelease == 0){
       return;
     }
@@ -426,6 +424,7 @@ void  OSSched (void)
     
     if (OSPrioHighRdy > 4)
     {
+
       /*      we only schedule a task if it fulfils SRP requirements:
       1. Task must have higher preemption/lower deadline than current running task
       2. Task's preemption is higher than current system ceiling, cannot be equal! --> lower deadline
@@ -489,13 +488,17 @@ void  OSSched (void)
           RB_NODE_ARR[rb_count].value = tree_smallest;
           RB_NODE_ARR[rb_count].left = 0;
           RB_NODE_ARR[rb_count].color = RED;
+//          ts_start1 = CPU_TS_Get32();
           rbtree_insert(&OS_BLOCKED_RDY_TREE, &RB_NODE_ARR[rb_count]);
+//          P = P;
+//          ts_end1 = CPU_TS_Get32()-ts_start1;
+//          P = P;  
           rb_count++;
           if (rb_count == 200)
             rb_count=0;
         }
       }
-      
+
     }
     
     if (OSTCBHighRdyPtr == OSTCBCurPtr) {                   /* Current task is still highest priority task?           */
@@ -508,13 +511,11 @@ void  OSSched (void)
 #endif
       OSTaskCtxSwCtr++;                                       /* Increment context switch counter                       */
     
-    
+
     OS_TASK_SW();                                           /* Perform a task level context switch                    */
     CPU_INT_EN();
     //*****************************************************************************************************************
-                  P = P;
-                  ts_end1 = CPU_TS_Get32()-ts_start1;
-                  P = P;
+
 }
 
 /*$PAGE*/

@@ -349,8 +349,11 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
     OS_TCB       *p_tcb;
     CPU_SR_ALLOC();
 
-
-
+//    CPU_INT32U ts_start1;
+//    CPU_INT32U ts_end1; 
+//    int P = 0;
+    
+    
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {
         OS_SAFETY_CRITICAL_EXCEPTION();
@@ -405,7 +408,11 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         /*      pushing of mutex into stack       */
         STACK_NODE_ARR[stack_count].data = p_mutex;
         //      below pushes the current mutex pointer into the stack of mutexes --> OS_MUTEX_STACK_HEAD
-        OS_MUTEX_STACK_HEAD = stack_push(OS_MUTEX_STACK_HEAD, &STACK_NODE_ARR[stack_count]);   
+//        ts_start1 = CPU_TS_Get32();
+        OS_MUTEX_STACK_HEAD = stack_push(OS_MUTEX_STACK_HEAD, &STACK_NODE_ARR[stack_count]);  
+//        P = P;
+//        ts_end1 = CPU_TS_Get32();
+//        P = P;;
         stack_count++;
         if (stack_count == 200)
           stack_count=0;
@@ -424,6 +431,7 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
            *p_ts                   = p_mutex->TS;
         }
         CPU_CRITICAL_EXIT();
+
         *p_err                     =  OS_ERR_NONE;
         return;
     }
@@ -681,6 +689,9 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     struct os_avl_node *node;
     CPU_SR_ALLOC();
 
+    CPU_INT32U ts_start1;
+    CPU_INT32U ts_end1; 
+    int P = 0;
 
 
 #ifdef OS_SAFETY_CRITICAL
@@ -716,7 +727,11 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
        
     /*      popping of mutex off stack       */
     //      this pops off current mutex pointer off the stack of mutexes, since no longer used
-    OS_MUTEX_STACK_HEAD = stack_pop(OS_MUTEX_STACK_HEAD);   
+//    ts_start1 = CPU_TS_Get32();
+    OS_MUTEX_STACK_HEAD = stack_pop(OS_MUTEX_STACK_HEAD); 
+//    P = P;
+//    ts_end1 = CPU_TS_Get32();
+//    P = P;;
     //  then we need to check through the stack to find min deadline to update system ceiling
     //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
     OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
@@ -732,8 +747,11 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
         new_avl_nodeArr[avl_count].deadline = cur->value->Deadline;
         new_avl_nodeArr[avl_count].p_tcb1 = cur->value;
         //      then we delete the task from the rbtree
+//        ts_start1 = CPU_TS_Get32();
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
-        
+//        P = P;
+//        ts_end1 = CPU_TS_Get32();
+//        P = P;;
         // if inserting a dupe, the function will return the node with the same key, but no insertion done
         // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
         node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
@@ -768,7 +786,6 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
         *p_err = OS_ERR_MUTEX_NESTING;
         return;
     }
-
     p_pend_list = &p_mutex->PendList;
     if (p_pend_list->NbrEntries == (OS_OBJ_QTY)0) {         /* Any task waiting on mutex?                             */
         p_mutex->OwnerTCBPtr     = (OS_TCB       *)0;       /* No                                                     */
@@ -798,7 +815,6 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
             (CPU_TS       )ts);
 
     OS_CRITICAL_EXIT_NO_SCHED();
-    
     if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
         OSSched();                                          /* Run the scheduler                                      */
     }

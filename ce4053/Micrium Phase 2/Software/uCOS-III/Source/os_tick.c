@@ -77,11 +77,11 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   struct avl_node* node_for_insertion;
   struct avl_node  *cur;
   struct os_avl_node* node, query;
-  //  OS_FLAG_GRP syncFlag;
-  //  OSFlagCreate((OS_FLAG_GRP *)&MyEventFlag,
-  //             (CPU_CHAR *)"MyEventFlag",
-  //             (OS_FLAGS)0,
-  //             (OS_ERR *)&err);
+  
+//  CPU_INT32U ts_start1;
+//  CPU_INT32U ts_end1; 
+//  int P = 0;
+  
   /*
   ************************************************************************************************************************
   *                                                 Adding Recursive Task into ready list
@@ -91,12 +91,8 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   Only done at start --> OSTickCtr == 0
   ************************************************************************************************************************
   */
-  //  if (OSTickCtr == 5) {
   if(syncRelease == 1)
   {
-    //    if(&MyEventFlag.Flags == 1) {
-    //  iterate through heap (size 5) 
-    //  add them all into readylist at one go
     for (int k = 0; k < 3; k++) 
     {
       p_tcb = OS_REC_HEAP.node_arr[k]->p_tcb;
@@ -104,18 +100,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       CPU_SR_ALLOC(); 		      
       /*insert into AVL tree as well */
       //    &node = (struct os_avl_node *)realloc(sizeof(struct os_avl_node));
-      //      //##########################      INCREMENT DEADLINE TO DEAL WITH SAME DEADLINES  #########################################################################
-      //      for (int p = 0; p < k; p++)
-      //      {
-      //        //      check if any existing p_tcb in heap first
-      //        if (OS_REC_HEAP.node_arr[p]->p_tcb != 0)
-      //        {
-      //          //      iterate through heap check if any same deadline
-      //           if (OS_REC_HEAP.node_arr[p]->p_tcb->Deadline == OS_REC_HEAP.node_arr[k]->p_tcb->Deadline)
-      //             OS_REC_HEAP.node_arr[k]->p_tcb->Deadline += 1;     //      if yes, change the deadline by adding 1
-      //             OS_REC_HEAP.node_arr[k]->deadline =  OS_REC_HEAP.node_arr[k]->p_tcb->Deadline;
-      //        }
-      //      }//#######################################################################################################################################################
       new_avl_nodeArr[avl_count].deadline = p_tcb->Deadline;
       new_avl_nodeArr[avl_count].p_tcb1 = p_tcb;
       
@@ -149,12 +133,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
-    syncRelease = 2;    //    sync release flag set to 1;
-    //    OSFlagPost ((OS_FLAG_GRP *)&MyEventFlag,
-    //                (OS_FLAGS)0x01,
-    //                (OS_OPT) OS_OPT_POST_FLAG_CLR,
-    //                (OS_ERR *)&err);
-    
+    syncRelease = 2;    //    sync release flag set to 2;
   }
   //******************************        if no longer at the start       *****************************************************************************************
   //******************************   
@@ -213,34 +192,6 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       //      }
       //      ###########################################################################
       //      #########################################################################
-      //      query.deadline=p_tcb->Deadline;
-      //      cur = avl_search(&OS_AVL_TREE, &query.avl, cmp_func);
-      //      node = _get_entry(cur, struct os_avl_node, avl);
-      //      
-      //      if (node->p_tcb1 == p_tcb) 
-      //      {
-      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-      //        {
-      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-      //        }
-      //        OSRecTaskDelete((OS_TCB *)node->p_tcb1, &err);
-      //      }
-      //      else if (node->p_tcb2 == p_tcb)
-      //      {
-      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-      //        {
-      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-      //        }
-      //        OSRecTaskDelete((OS_TCB *)node->p_tcb2, &err);
-      //      }
-      //      else if (node->p_tcb3 == p_tcb)
-      //      {
-      //        while ((&OS_MUTEX_STACK_HEAD != 0)&&(OS_MUTEX_STACK_HEAD->data->OwnerTCBPtr == p_tcb))
-      //        {
-      //          OSMutexPost((OS_MUTEX *)OS_MUTEX_STACK_HEAD->data, (OS_OPT )OS_OPT_POST_NO_SCHED, (OS_ERR *)&err);
-      //        }
-      //        OSRecTaskDelete((OS_TCB *)node->p_tcb3, &err);
-      //      }
       
       
 #if OS_CFG_TASK_REG_TBL_SIZE > 0u 		
@@ -364,9 +315,9 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
         count=0;
     }
   }   //      comment this to prove readylist function (syncrhonous release)
-  //                P = P;
-  //              ts_end1 = CPU_TS_Get32();
-  //              P = P;;
+//  P = P;
+//  ts_end1 = CPU_TS_Get32();
+//  P = P;;
   OSSched();	
 }		
 
@@ -387,12 +338,11 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 
 void  OS_TickTask (void *p_arg)
 {
-//  CPU_TS32 ts_start1;
-//  CPU_TS32 ts_end1; 
-//  int P = 0;
-//  
-//  
-//  ts_start1 = CPU_TS_Get32();
+//    CPU_INT32U ts_start1;
+//    CPU_INT32U ts_end1; 
+//    int P = 0;
+
+  
     OS_ERR  err;
     CPU_TS  ts;
     
@@ -405,15 +355,14 @@ void  OS_TickTask (void *p_arg)
                             (OS_OPT   )OS_OPT_PEND_BLOCKING,
                             (CPU_TS  *)&ts,
                             (OS_ERR  *)&err);               /* Wait for signal from tick interrupt                    */
-//           ts_start = OS_TS_GET();
          if (err == OS_ERR_NONE) {		
             if (OSRunning == OS_STATE_OS_RUNNING) {		
-		
-//              P = P;
-//              ts_end1 = CPU_TS_Get32();
-//              P = P;;
 		OS_revive_rec_task();  // insertion of the tasks into the ready list
+//                ts_start1 = CPU_TS_Get32();
                 OS_TickListUpdate();                        /* Update all tasks waiting for time                      */ 
+//                P = P;
+//                ts_end1 = CPU_TS_Get32();
+//                P = P;
             }
         }
     }
