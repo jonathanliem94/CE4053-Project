@@ -81,7 +81,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
 //  CPU_INT32U ts_start1;
 //  CPU_INT32U ts_end1; 
 //  int P = 0;
-  
+//  ts_start1 = CPU_TS_Get32();
   /*
   ************************************************************************************************************************
   *                                                 Adding Recursive Task into ready list
@@ -133,6 +133,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       }	
       OS_CRITICAL_EXIT_NO_SCHED();
     }
+//    ts_end1 = CPU_TS_Get32();
     syncRelease = 2;    //    sync release flag set to 2;
   }
   //******************************        if no longer at the start       *****************************************************************************************

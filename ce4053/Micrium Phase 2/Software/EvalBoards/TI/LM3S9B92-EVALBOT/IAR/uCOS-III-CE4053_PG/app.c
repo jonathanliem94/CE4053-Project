@@ -45,9 +45,9 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   7000 
-#define TASK2PERIOD                   5000
-#define TASK3PERIOD                   5000
+#define TASK1PERIOD                   8000 
+#define TASK2PERIOD                   6000
+#define TASK3PERIOD                   6000
 
 #define WORKLOAD1                    2
 #define WORKLOAD2                    2
@@ -205,7 +205,7 @@ static  void  AppTaskStart (void  *p_arg)
     /* Create Mutexes */
     OSMutexCreate((OS_MUTEX *)&MutexOne, 
                   (CPU_CHAR *)1,
-                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex one --> AppTaskOne use mutex one meh??
+                  (OS_TCB  *)&AppTaskThreeTCB,    //      resource ceiling for mutex one --> AppTaskOne use mutex one meh??
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)2, 
@@ -213,7 +213,7 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex three
+                  (OS_TCB  *)&AppTaskThreeTCB,    //      resource ceiling for mutex three
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
@@ -328,8 +328,8 @@ static  void  AppTaskTwo (void  *p_arg)
 //    int P = 0;
 //    ts_start1 = CPU_TS_Get32();
     //############################################      PEND    ####################################################
-    OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
-    printf("2 take \t 3\n");
+//    OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+//    printf("2 take \t 3\n");
     //############################################################################################################
     for(i=0; i <(ONESECONDTICK); i++)
     {
@@ -343,10 +343,15 @@ static  void  AppTaskTwo (void  *p_arg)
     //################################################    PEND    #####################################################
     OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
     printf("2 take \t 2 \n");
+    OSMutexPend((OS_MUTEX *)&MutexOne, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("2 take \t 1\n");
+    //#################################################   POST    ######################################################
+    printf("2 gonna rele 1\n");
+    OSMutexPost((OS_MUTEX *)&MutexOne, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     printf("2 gonna rele 2 \n");
     OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
-    printf("2 gonna rele 3 \n");
-    OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+//    printf("2 gonna rele 3 \n");
+//    OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     //#################################################   POST    ######################################################
 //    P = P;
 //    ts_end1 = CPU_TS_Get32();
@@ -365,10 +370,10 @@ static  void  AppTaskThree (void  *p_arg)
 //    int P = 0;
 //    ts_start1 = CPU_TS_Get32();
     //#################################################    PEND    ###################################################
-//    printf("3 take \t 1\n");
-//    OSMutexPend((OS_MUTEX *)&MutexOne, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
-//    printf("3 take \t 3\n");
-//    OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("3 take \t 1\n");
+    OSMutexPend((OS_MUTEX *)&MutexOne, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("3 take \t 3\n");
+    OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
 //    printf("3 take \t 2\n");
 //    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
 //    //##############################################################################################################
@@ -387,11 +392,12 @@ static  void  AppTaskThree (void  *p_arg)
     }
     printf("3 task run\n");//
     //###################################################       POST    ##############################################
-//    printf("3 gonna rele 3\n");
-//    OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
-//
-//    printf("3 gonna rele 1\n");
-//    OSMutexPost((OS_MUTEX *)&MutexOne, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+//    printf("3 gonna rele 2 \n");
+//    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+    printf("3 gonna rele 3\n");
+    OSMutexPost((OS_MUTEX *)&MutexThree, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+    printf("3 gonna rele 1\n");
+    OSMutexPost((OS_MUTEX *)&MutexOne, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
     //############################################################################################################
 //    P = P;
 //    ts_end1 = CPU_TS_Get32();

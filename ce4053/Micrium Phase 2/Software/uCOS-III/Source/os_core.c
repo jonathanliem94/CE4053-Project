@@ -433,9 +433,6 @@ void  OSSched (void)
       query.deadline=0;
       while (OS_AVL_TREE.root != 0)     
       {
-        if (OSTickCtr==29000){ 
-          query.deadline=0;
-        }
         //##########   AVL Tree to give us the next lowest deadline task        ##########################
         cur = avl_search_greater(&OS_AVL_TREE, &query.avl, cmp_func);
         node = _get_entry(cur, struct os_avl_node, avl);
