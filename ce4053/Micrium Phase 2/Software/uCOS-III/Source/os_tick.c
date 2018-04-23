@@ -78,10 +78,9 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
   struct avl_node  *cur;
   struct os_avl_node* node, query;
   
-//  CPU_INT32U ts_start1;
-//  CPU_INT32U ts_end1; 
-//  int P = 0;
-//  ts_start1 = CPU_TS_Get32();
+  CPU_TS32 ts_start1, ts_end1, ts_time1;
+  
+
   /*
   ************************************************************************************************************************
   *                                                 Adding Recursive Task into ready list
@@ -105,7 +104,10 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       
       // if inserting a dupe, the function will return the node with the same key, but no insertion done
       // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
+//      ts_start1 = CPU_TS_Get32();
       node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
+//      ts_end1 = CPU_TS_Get32();
+//      ts_time1 = ts_end1 -ts_start1;
       node_for_insertion->tcb_count++;
       if (&new_avl_nodeArr[avl_count].avl != node_for_insertion)
       {
@@ -303,8 +305,8 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
         else if (node->p_tcb2 == 0) node->p_tcb2 = new_avl_nodeArr[avl_count].p_tcb1;
         else if (node->p_tcb3 == 0) node->p_tcb3 = new_avl_nodeArr[avl_count].p_tcb1;
       }
-      
       heap_pop(&OS_REC_HEAP);
+
       heap_push(&OS_REC_HEAP,&new_nodeArr[count]);
       OS_CRITICAL_EXIT_NO_SCHED();	
       
@@ -315,10 +317,7 @@ void OS_revive_rec_task(void)		//      insert tasks into ready list
       if (count == 100)
         count=0;
     }
-  }   //      comment this to prove readylist function (syncrhonous release)
-//  P = P;
-//  ts_end1 = CPU_TS_Get32();
-//  P = P;;
+  }
   OSSched();	
 }		
 

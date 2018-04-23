@@ -57,10 +57,10 @@ OS_DEADLINE stack_find_min_deadline(struct stack_node *head)
     return 99999999;
   }
   else {        //      something in mutex
-    deadline = cur->data->Resource_Ceiling->Deadline;
+    deadline = cur->data->Resource_Ceiling->Period;
     while (cur != 0){
-      if (cur->data->Resource_Ceiling->Deadline < deadline) {
-        deadline = cur->data->Resource_Ceiling->Deadline;
+      if (cur->data->Resource_Ceiling->Period < deadline) {
+        deadline = cur->data->Resource_Ceiling->Period;
       }
       cur = cur->next;
     }

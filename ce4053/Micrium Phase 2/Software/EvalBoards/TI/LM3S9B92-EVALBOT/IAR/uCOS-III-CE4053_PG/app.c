@@ -45,12 +45,12 @@
 
 #define ONESECONDTICK             7000000
 
-#define TASK1PERIOD                   7000 
-#define TASK2PERIOD                   5000
-#define TASK3PERIOD                   5000
+#define TASK1PERIOD                   4000 
+#define TASK2PERIOD                   7000
+#define TASK3PERIOD                   10000
 
 #define WORKLOAD1                    2
-#define WORKLOAD2                    2
+#define WORKLOAD2                    1
 #define WORKLOAD3                    1
 
 #define TIMERDIV                      (BSP_CPUClkFreq() / (CPU_INT32U)OSCfg_TickRate_Hz)
@@ -209,11 +209,11 @@ static  void  AppTaskStart (void  *p_arg)
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexTwo, 
                   (CPU_CHAR *)2, 
-                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex two
+                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex two
                   (OS_ERR *)&err);
     OSMutexCreate((OS_MUTEX *)&MutexThree, 
                   (CPU_CHAR *)3, 
-                  (OS_TCB  *)&AppTaskTwoTCB,    //      resource ceiling for mutex three
+                  (OS_TCB  *)&AppTaskOneTCB,    //      resource ceiling for mutex three
                   (OS_ERR *)&err);
 
     /* Initialise the 3 Main Tasks to  Deleted State */
@@ -274,16 +274,12 @@ static  void  AppTaskOne (void  *p_arg)
     CPU_INT32U  iSec, k, i, j;
     CPU_TS ts;
     
-//    CPU_INT32U ts_start1;
-//    CPU_INT32U ts_end1; 
-//    int P = 0;
-//    ts_start1 = CPU_TS_Get32();
-    
     iSec = WORKLOAD1;
     //#############################################     PEND    ##################################################
+    
     OSMutexPend((OS_MUTEX *)&MutexOne, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
-    printf("1 take \t 1\n");
-    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
+    printf("1 take \t 1\n");    
+    OSMutexPend((OS_MUTEX *)&MutexTwo, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);    
     printf("1 take \t 2\n");
     OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
     printf("1 take \t 3\n");
@@ -306,21 +302,17 @@ static  void  AppTaskOne (void  *p_arg)
     BSP_DisplayClear();
     BSP_DisplayStringDraw("TASK ONE",0u, 0u);
     printf("1 gonna rele 2\n");
-    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
+    OSMutexPost((OS_MUTEX *)&MutexTwo, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);    
     printf("1 gonna rele 1\n");
     OSMutexPost((OS_MUTEX *)&MutexOne, (OS_OPT )OS_OPT_POST_NONE, (OS_ERR *)&err);
-    //############################################################################################################
-//    P = P;
-//    ts_end1 = CPU_TS_Get32();
-//    P = P;
-    
+    //############################################################################################################  
     OSRecTaskDelete((OS_TCB *)0, &err);
 }
 
 static  void  AppTaskTwo (void  *p_arg)
 {
     OS_ERR      err;
-    CPU_INT32U  i, j=7;
+    CPU_INT32U  i, k, j=7, iSec;
     CPU_TS ts;
     
 //    CPU_INT32U ts_start1;
@@ -331,10 +323,11 @@ static  void  AppTaskTwo (void  *p_arg)
     OSMutexPend((OS_MUTEX *)&MutexThree, (OS_TICK )0, (OS_OPT )OS_OPT_PEND_BLOCKING, (CPU_TS *)&ts, (OS_ERR *)&err);
     printf("2 take \t 3\n");
     //############################################################################################################
-    for(i=0; i <(ONESECONDTICK); i++)
+    iSec = WORKLOAD2;
+    for(k=0; k<iSec; k++)
     {
-      j = ((i * 2) + j);
-      
+      for(i=0; i <ONESECONDTICK; i++)
+         j = ((i * 2) + j);
     }
     printf("2 task run\n");
 

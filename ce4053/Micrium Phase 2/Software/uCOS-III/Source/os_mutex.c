@@ -348,10 +348,9 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
     OS_PEND_DATA  pend_data;
     OS_TCB       *p_tcb;
     CPU_SR_ALLOC();
+    CPU_TS32 ts_start1, ts_end1, ts_time1;
+    
 
-//    CPU_INT32U ts_start1;
-//    CPU_INT32U ts_end1; 
-//    int P = 0;
     
     
 #ifdef OS_SAFETY_CRITICAL
@@ -410,19 +409,17 @@ void  OSMutexPend (OS_MUTEX   *p_mutex,
         //      below pushes the current mutex pointer into the stack of mutexes --> OS_MUTEX_STACK_HEAD
 //        ts_start1 = CPU_TS_Get32();
         OS_MUTEX_STACK_HEAD = stack_push(OS_MUTEX_STACK_HEAD, &STACK_NODE_ARR[stack_count]);  
-//        P = P;
 //        ts_end1 = CPU_TS_Get32();
-//        P = P;;
+//        ts_time1 = ts_end1 -ts_start1;
         stack_count++;
         if (stack_count == 200)
           stack_count=0;
-//        if (stack_count == 31)
-//          stack_count=31;
-        
         //  then we need to check through the stack to find min deadline
         //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
+//        ts_start1 = CPU_TS_Get32();
         OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
-        
+//        ts_end1 = CPU_TS_Get32();
+//        ts_time1 = ts_end1 -ts_start1;
         /*      we need to assign the task holding this mutex to have resource ceiling's priority?
                 or maybe this is already done with the comparison with system ceiling
         */
@@ -688,10 +685,8 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
     struct avl_node* node_for_insertion;
     struct os_avl_node *node;
     CPU_SR_ALLOC();
-
-    CPU_INT32U ts_start1;
-    CPU_INT32U ts_end1; 
-    int P = 0;
+    
+    CPU_TS32 ts_start1, ts_end1, ts_time1;
 
 
 #ifdef OS_SAFETY_CRITICAL
@@ -727,31 +722,33 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
        
     /*      popping of mutex off stack       */
     //      this pops off current mutex pointer off the stack of mutexes, since no longer used
-//    ts_start1 = CPU_TS_Get32();
     OS_MUTEX_STACK_HEAD = stack_pop(OS_MUTEX_STACK_HEAD); 
-//    P = P;
-//    ts_end1 = CPU_TS_Get32();
-//    P = P;;
     //  then we need to check through the stack to find min deadline to update system ceiling
     //  the mutex with min OS_DEADLINE will be pointed as our OS_SYSTEM_CEILING variable
+//    ts_start1 = CPU_TS_Get32();  
     OS_SYSTEM_CEILING = stack_find_min_deadline(OS_MUTEX_STACK_HEAD);
+//    ts_end1 = CPU_TS_Get32();
+//    ts_time1 = ts_end1 -ts_start1;
     /*################################################################################################################*/
     if (OS_BLOCKED_RDY_TREE.root != 0)
-    {
+    {          
       //        after releasing the mutex, we check if a task is currently being blocked in rbtree
+//      ts_start1 = CPU_TS_Get32();     
       struct RBNode* cur = _rbtree_minimum(OS_BLOCKED_RDY_TREE.root);
+//      ts_end1 = CPU_TS_Get32();
+//      ts_time1 = ts_end1 -ts_start1;
       while ((cur!=0)&&(cur->value->Deadline < OS_SYSTEM_CEILING))
       {
+//        ts_start1 = CPU_TS_Get32();
         //      iterate through rbtree to check if task blocked has higher preemption than the new OS_SYSTEM_CEILING
         //      if yes we put task back into avl tree
         new_avl_nodeArr[avl_count].deadline = cur->value->Deadline;
         new_avl_nodeArr[avl_count].p_tcb1 = cur->value;
         //      then we delete the task from the rbtree
-//        ts_start1 = CPU_TS_Get32();
+//        ts_start1 = CPU_TS_Get32();     
         rbtree_del(&OS_BLOCKED_RDY_TREE, cur->key);
-//        P = P;
 //        ts_end1 = CPU_TS_Get32();
-//        P = P;;
+//        ts_time1 = ts_end1 -ts_start1;
         // if inserting a dupe, the function will return the node with the same key, but no insertion done
         // if inserting a non-dupe, the function inserts normally and returns the node that was inserted
         node_for_insertion = avl_insert(&OS_AVL_TREE, &new_avl_nodeArr[avl_count].avl, cmp_func);
@@ -791,6 +788,9 @@ void  OSMutexPost (OS_MUTEX  *p_mutex,
         p_mutex->OwnerTCBPtr     = (OS_TCB       *)0;       /* No                                                     */
         p_mutex->OwnerNestingCtr = (OS_NESTING_CTR)0;
         OS_CRITICAL_EXIT();
+        if ((opt & OS_OPT_POST_NO_SCHED) == (OS_OPT)0) {
+          OSSched();                                          /* Run the scheduler                                      */
+        }
         *p_err = OS_ERR_NONE;
         return;
     }

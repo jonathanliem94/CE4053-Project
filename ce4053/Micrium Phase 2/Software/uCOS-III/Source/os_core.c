@@ -378,10 +378,8 @@ void  OSSafetyCriticalStart (void)
 
 void  OSSched (void)
 {
-    CPU_INT32U ts_start1;
-    CPU_INT32U ts_end1; 
-    int P = 0;
-
+//    CPU_TS32 ts_start1, ts_end1, ts_time1;
+//    ts_start1 = CPU_TS_Get32();
     
     
   //*****************************************************************************************************************
@@ -421,10 +419,8 @@ void  OSSched (void)
     */
     
     /* if more than 4, means non internal task, i.e. recursive tasks */
-    
     if (OSPrioHighRdy > 4)
     {
-
       /*      we only schedule a task if it fulfils SRP requirements:
       1. Task must have higher preemption/lower deadline than current running task
       2. Task's preemption is higher than current system ceiling, cannot be equal! --> lower deadline
@@ -450,7 +446,7 @@ void  OSSched (void)
           OSTCBHighRdyPtr = tree_smallest;
           break;
         }
-        else if (tree_smallest->Deadline < OS_SYSTEM_CEILING)
+        else if (tree_smallest->Period < OS_SYSTEM_CEILING)
         {    
           /*        the task must have higher preemption/lower deadline than current running task
           we just need check condition 2, since condition 1 fulfilled by EDF sched
@@ -479,20 +475,20 @@ void  OSSched (void)
           else if (node->p_tcb2 == tree_smallest) node->p_tcb2 = 0;
           else if (node->p_tcb3 == tree_smallest) node->p_tcb3 = 0;
           avl_remove(&OS_AVL_TREE, cur);
+          
           OS_RdyListRemove(tree_smallest);
           RB_NODE_ARR[rb_count].parent = 0;
           RB_NODE_ARR[rb_count].key = (void *)tree_smallest->Deadline;
           RB_NODE_ARR[rb_count].value = tree_smallest;
           RB_NODE_ARR[rb_count].left = 0;
           RB_NODE_ARR[rb_count].color = RED;
-//          ts_start1 = CPU_TS_Get32();
+
           rbtree_insert(&OS_BLOCKED_RDY_TREE, &RB_NODE_ARR[rb_count]);
-//          P = P;
-//          ts_end1 = CPU_TS_Get32()-ts_start1;
-//          P = P;  
           rb_count++;
           if (rb_count == 200)
             rb_count=0;
+//          ts_end1 = CPU_TS_Get32();
+//          ts_time1 = ts_end1 -ts_start1;
         }
       }
 

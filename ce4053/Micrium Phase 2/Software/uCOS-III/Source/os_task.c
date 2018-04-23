@@ -444,7 +444,7 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
                        OS_OPT         opt,
                        OS_ERR        *p_err)		
 {	
-  
+//    CPU_TS32 ts_start1, ts_end1, ts_time1;
 
   if(period != 0)		
   {		
@@ -583,8 +583,10 @@ void  OSRecTaskCreate (OS_TCB        *p_tcb,
     REC_TASK_ARR[OS_REC_HEAP.count].p_tcb = p_tcb;
     
     //  followed by pushing it into a heap
+//    ts_start1 = CPU_TS_Get32();
     heap_push(&OS_REC_HEAP,&REC_TASK_ARR[OS_REC_HEAP.count]);
-
+//    ts_end1 = CPU_TS_Get32();
+//    ts_time1 = ts_end1 -ts_start1;
     
 //        OSTaskCreateHook(p_tcb);                                /* Call user defined hook                                 */
 //
@@ -768,7 +770,8 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
 {
     struct avl_node *cur;
     struct os_avl_node *node, query;
-  
+    CPU_TS32 ts_start1, ts_end1, ts_time1;
+    
     CPU_SR_ALLOC();
 #ifdef OS_SAFETY_CRITICAL
     if (p_err == (OS_ERR *)0) {
@@ -807,7 +810,10 @@ void  OSRecTaskDelete (OS_TCB  *p_tcb,
             if (node->p_tcb1 == p_tcb) node->p_tcb1 = 0;
             else if (node->p_tcb2 == p_tcb) node->p_tcb2 = 0;
             else if (node->p_tcb3 == p_tcb) node->p_tcb3 = 0;
+//            ts_start1 = CPU_TS_Get32();
             avl_remove(&OS_AVL_TREE, cur);
+//            ts_end1 = CPU_TS_Get32();
+//            ts_time1 = ts_end1 -ts_start1;
             /* remove from ready list as well */
             OS_RdyListRemove(p_tcb);
              break;
