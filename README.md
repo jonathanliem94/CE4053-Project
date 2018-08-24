@@ -1,7 +1,7 @@
 # CE4053-Project
 CE4053: Micrium OS Modding
 
-This project utlises the Real-Time Operating System of µC/OS-III, found here at https://www.micrium.com/rtos/ .
+This project utilises the Real-Time Operating System of µC/OS-III, found here at https://www.micrium.com/rtos/ .
 
 We have made modifications to the Operating System(OS), such that the OS now uses Earliest-Deadline First (EDF) Scheduling, instead of the original priority-based scheduler, which may not be suitable for some embedded applications.
 The modification does NOT replace the original implementation of the ready list and priority bitmap.
