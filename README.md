@@ -9,11 +9,16 @@ Instead, the EDF Scheduler makes use of an additional data structure, the Adelso
 More information about the tree can be found here at https://en.wikipedia.org/wiki/AVL_tree .
 
 Files with these additions:
-[AVL tree header](ce4053/Micrium Phase 1/Software/EvalBoards/TI/LM3S9B920EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.h)
-[AVL tree implementation](ce4053/Micrium Phase 1/Software/EvalBoards/TI/LM3S9B920EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.c)
-[Adding recursive tasks into the ready list once enough time has elapsed (see OS_revive_rec_task())](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_tick.c)
-[Adding two new functions OSRecTaskCreate and OSRecTaskDelete specially for recursive tasks](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_task.c)
-[Modification of the OSSched function to handle the scheduling of recursive tasks](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_core.c)
+
+[AVL tree header](https://github.com/jonathanliem94/CE4053-Project/blob/NicVersionDynamic/ce4053/Micrium%20Phase%201/Software/EvalBoards/TI/LM3S9B92-EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.h)
+
+[AVL tree implementation](https://github.com/jonathanliem94/CE4053-Project/blob/NicVersionDynamic/ce4053/Micrium%20Phase%201/Software/EvalBoards/TI/LM3S9B92-EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.c)
+
+[Adding recursive tasks into the ready list once enough time has elapsed (see OS_revive_rec_task())](https://github.com/jonathanliem94/CE4053-Project/blob/NicVersionDynamic/ce4053/Micrium%20Phase%201/Software/uCOS-III/Source/os_tick.c)
+
+[Adding two new functions OSRecTaskCreate and OSRecTaskDelete specially for recursive tasks](https://github.com/jonathanliem94/CE4053-Project/blob/NicVersionDynamic/ce4053/Micrium%20Phase%201/Software/uCOS-III/Source/os_task.c)
+
+[Modification of the OSSched function to handle the scheduling of recursive tasks](https://github.com/jonathanliem94/CE4053-Project/blob/NicVersionDynamic/ce4053/Micrium%20Phase%201/Software/uCOS-III/Source/os_core.c)
 
 Another modification made to the OS is the addition of a Resource Sharing Protocol.
 This is to prevent deadlocks when mutexes are taken by differing processes.
