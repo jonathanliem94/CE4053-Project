@@ -8,6 +8,13 @@ The modification does NOT replace the original implementation of the ready list 
 Instead, the EDF Scheduler makes use of an additional data structure, the Adelson-Velsky and Landis (AVL) tree. 
 More information about the tree can be found here at https://en.wikipedia.org/wiki/AVL_tree .
 
+Files with these additions:
+[AVL tree header](ce4053/Micrium Phase 1/Software/EvalBoards/TI/LM3S9B920EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.h)
+[AVL tree implementation](ce4053/Micrium Phase 1/Software/EvalBoards/TI/LM3S9B920EVALBOT/IAR/uCOS-III-CE4053_PG/avltree.c)
+[Adding recursive tasks into the ready list once enough time has elapsed (see OS_revive_rec_task())](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_tick.c)
+[Adding two new functions OSRecTaskCreate and OSRecTaskDelete specially for recursive tasks](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_task.c)
+[Modification of the OSSched function to handle the scheduling of recursive tasks](ce4053/Micrium Phase 1/Software/uCOS-III/Source/os_core.c)
+
 Another modification made to the OS is the addition of a Resource Sharing Protocol.
 This is to prevent deadlocks when mutexes are taken by differing processes.
 The protocol we have added into the OS is the Stack Resource Protocol (SRP).
